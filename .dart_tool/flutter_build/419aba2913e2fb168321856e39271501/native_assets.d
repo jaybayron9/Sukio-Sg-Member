@@ -1,0 +1,1 @@
+ /Users/cal4careit-ph/Documents/GitHub/Sokyu-mahikari-flutter/.dart_tool/flutter_build/419aba2913e2fb168321856e39271501/native_assets.yaml: 
