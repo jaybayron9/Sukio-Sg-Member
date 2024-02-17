@@ -1,5 +1,5 @@
 // import 'package:flutter/gestures.dart';
-import 'package:development/pages/login_page.dart';
+import '/pages/login_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -7,8 +7,9 @@ import 'package:qrscan/qrscan.dart' as scanner;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../helpers/checkCookie.dart';
 
-class DashboardPage extends StatefulWidget { 
+class DashboardPage extends StatefulWidget {
   final String? memberId;
   final String? firstName;
   final String? lastName;
@@ -18,24 +19,19 @@ class DashboardPage extends StatefulWidget {
   final String? role;
   final String? qrCode;
 
-  const DashboardPage({
-    Key? key, 
-    this.memberId,
-    this.firstName,
-    this.lastName,
-    this.email,
-    this.countryCode,
-    this.phoneNumber,
-    this.role,
-    this.qrCode
-  }) : super(key: key); 
+  const DashboardPage({Key? key, this.memberId, this.firstName, this.lastName, this.email, this.countryCode, this.phoneNumber, this.role, this.qrCode}) : super(key: key);
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  String? scannedQRData; 
+  // check if session is already saved, check
+  // contact with index start call, based if rerepose auth or not,
+  // if auth, forward dashboard page
+  // if not auth, stay login
+
+  String? scannedQRData;
   int _selectedIndex = 0;
   static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
@@ -45,14 +41,9 @@ class _DashboardPageState extends State<DashboardPage> {
     });
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonResponse = json.decode(response.body);  
+      final List<dynamic> jsonResponse = json.decode(response.body);
 
-      return jsonResponse.map((e) => {
-        'id': e['id'].toString(),
-        'check_in': e['check_in'],
-        'check_out': e['check_out'],
-        'date': e['date']
-      }).toList();
+      return jsonResponse.map((e) => {'id': e['id'].toString(), 'check_in': e['check_in'], 'check_out': e['check_out'], 'date': e['date']}).toList();
     } else {
       throw Exception('Failed to load data');
     }
@@ -60,20 +51,17 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> _qrScanner() async {
     var cameraStatus = await Permission.camera.status;
-    if (cameraStatus.isGranted) { 
+    if (cameraStatus.isGranted) {
       String? qrdata = await scanner.scan();
       if (qrdata != null) {
         setState(() {
-          scannedQRData = qrdata; 
+          scannedQRData = qrdata;
         });
 
-        final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/attendance/inMember"), body: {
-          'member_id': widget.memberId,
-          'code': qrdata
-        });
+        final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/attendance/inMember"), body: {'member_id': widget.memberId, 'code': qrdata});
 
         if (res.statusCode == 200) {
-          final Map<String, dynamic> responseData = json.decode(res.body);  
+          final Map<String, dynamic> responseData = json.decode(res.body);
 
           await showDialog(
             context: context,
@@ -83,7 +71,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 content: RichText(
                   text: TextSpan(
                     text: responseData['message'].toString(),
-                    style: const  TextStyle(color: Colors.black), 
+                    style: const TextStyle(color: Colors.black),
                   ),
                 ),
                 actions: <Widget>[
@@ -97,35 +85,31 @@ class _DashboardPageState extends State<DashboardPage> {
               );
             },
           );
-        } 
-      } 
+        }
+      }
     }
   }
 
-  String imageUrl = '';
-
+  String imageUrl = ''; 
   Future<void> freshQR() async {
-      final res = await http.post(Uri.parse('https://ww2.selfiesmile.app/members/newQR'),
-        body: {
-          'member_id': widget.memberId
+    final res = await http.post(Uri.parse('https://ww2.selfiesmile.app/members/newQR'), body: {'member_id': widget.memberId});
+
+    if (res.statusCode == 200) {
+      final Map<String, dynamic> responseData = json.decode(res.body);
+
+      print(responseData);
+
+      setState(() {
+        imageUrl = 'https://ww2.selfiesmile.app/img/qrcodes/' + responseData['img'].toString();
       });
-
-      if (res.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(res.body);  
-
-        print(responseData);
-
-        setState(() {
-          imageUrl = 'https://ww2.selfiesmile.app/img/qrcodes/' + responseData['img'].toString();
-        });
-      }
+    }
   }
 
   @override
   void initState() {
-    super.initState(); 
+    super.initState();
     imageUrl = 'https://ww2.selfiesmile.app/img/qrcodes/member_${widget.memberId}_${widget.qrCode}.png';
-  }  
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -140,19 +124,19 @@ class _DashboardPageState extends State<DashboardPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [ 
+        actions: [
           IconButton(
             icon: const Icon(Icons.qr_code_scanner),
             onPressed: _qrScanner,
           ),
         ],
       ),
-      body: _widgetOptions[_selectedIndex], 
-      drawer: Drawer( 
-        child: ListView( 
+      body: _widgetOptions[_selectedIndex],
+      drawer: Drawer(
+        child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader( 
+            DrawerHeader(
               decoration: const BoxDecoration(
                 color: Colors.orangeAccent,
               ),
@@ -162,62 +146,59 @@ class _DashboardPageState extends State<DashboardPage> {
                     margin: const EdgeInsets.only(bottom: 10),
                     child: const Text(
                       'Welcome to Sokyu Mahikari!',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
                   Container(
                     margin: const EdgeInsets.only(top: 15),
-                    child: Row(  
-                      children: [ 
+                    child: Row(
+                      children: [
                         const CircleAvatar(
                           radius: 30,
                           backgroundImage: AssetImage('images/person.png'),
-                        ), 
+                        ),
                         Container(
                           margin: const EdgeInsets.only(left: 10),
-                          child: Text('${widget.firstName!} ${widget.lastName!}', style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white
-                          ),),
+                          child: Text(
+                            '${widget.firstName!} ${widget.lastName!}',
+                            style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+                          ),
                         ),
                       ],
                     ),
-                  ) 
+                  )
                 ],
-              ), 
+              ),
             ),
             ListTile(
               title: const Text('Home'),
               selected: _selectedIndex == 0,
-              onTap: () { 
-                _onItemTapped(0); 
+              onTap: () {
+                _onItemTapped(0);
                 Navigator.pop(context);
               },
-            ), 
+            ),
             ListTile(
               title: const Text('Group'),
               selected: _selectedIndex == 1,
-              onTap: () { 
-                _onItemTapped(1); 
+              onTap: () {
+                _onItemTapped(1);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               title: const Text('QR'),
               selected: _selectedIndex == 2,
-              onTap: () { 
-                _onItemTapped(2); 
+              onTap: () {
+                _onItemTapped(2);
                 Navigator.pop(context);
               },
-            ), 
+            ),
             ListTile(
-              title: const Text('Logout'), 
-              onTap: () { 
-                Navigator.push(context,
+              title: const Text('Logout'),
+              onTap: () {
+                Navigator.push(
+                  context,
                   MaterialPageRoute(
                     builder: (context) => const LoginPage(),
                   ),
@@ -242,7 +223,7 @@ class _DashboardPageState extends State<DashboardPage> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
-                } 
+                }
 
                 return DataTable(
                   columns: const [
@@ -253,16 +234,16 @@ class _DashboardPageState extends State<DashboardPage> {
                   ],
                   rows: snapshot.data!.map<DataRow>((record) {
                     return DataRow(cells: [
-                      DataCell(Text(record['id'].toString() == '0' ? '---' :  record['id'])),
+                      DataCell(Text(record['id'].toString() == '0' ? '---' : record['id'])),
                       DataCell(Text(record['check_in'].toString() == 'null' ? '---' : record['check_in'])),
                       DataCell(Text(record['check_out'].toString() == 'null' ? '---' : record['check_out'])),
                       DataCell(Text(record['date'].toString() == 'null' ? '---' : record['date']))
                     ]);
                   }).toList(),
                 );
-              }, 
+              },
             ),
-          ), 
+          ),
         ],
       ),
       const Text(
@@ -270,33 +251,28 @@ class _DashboardPageState extends State<DashboardPage> {
         style: optionStyle,
       ),
       Column(
-        crossAxisAlignment: CrossAxisAlignment.center, 
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Center(
-            child: Container(
-              margin: const EdgeInsets.only(top: 40),
-              child: Image.network(
-                imageUrl,
-                width: 400,
-                height: 400,
-              ),
-            )
-          ),
+              child: Container(
+            margin: const EdgeInsets.only(top: 40),
+            child: Image.network(
+              imageUrl,
+              width: 400,
+              height: 400,
+            ),
+          )),
           Container(
             margin: const EdgeInsets.only(top: 10),
             child: ElevatedButton(
-              onPressed: () {
-                freshQR();
-              }, 
-              child: const Text(
-                'Refresh',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w500
-                ),
-              )
-            ),
-          ), 
+                onPressed: () {
+                  freshQR();
+                },
+                child: const Text(
+                  'Refresh',
+                  style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
+                )),
+          ),
         ],
       ),
       const Text(

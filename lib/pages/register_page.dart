@@ -1,5 +1,5 @@
-import 'package:development/pages/login_page.dart';
-import 'package:development/pages/validation_page.dart';
+import '/pages/login_page.dart';
+import '/pages/validation_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:country_picker/country_picker.dart';
@@ -13,7 +13,7 @@ class RegisterPage extends StatefulWidget {
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> { 
+class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController groupController = TextEditingController();
@@ -52,13 +52,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> sendData() async {
     try {
-      final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/register"), body: {
-        'first_name': firstNameController.text,
-        'last_name': lastNameController.text,
-        'phone_number': phoneNumberController.text,
-        'email': emailController.text,
-        'country_code': countryCode
-      });
+      final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/register"),
+          body: {'first_name': firstNameController.text, 'last_name': lastNameController.text, 'phone_number': phoneNumberController.text, 'email': emailController.text, 'country_code': countryCode});
 
       if (res.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(res.body);
@@ -82,30 +77,31 @@ class _RegisterPageState extends State<RegisterPage> {
           });
         } else {
           setState(() {
-              firstNameErr = '';
-              lastNameErr = '';
-              emailErr = '';
-              phoneNumErr = '';
-              invEmailErr = '';
-              invPhoneErr = '';
-              existPhoneErr = '';
-              firstNameErr = '';
-              success = 'Phone Verification Sent!';
+            firstNameErr = '';
+            lastNameErr = '';
+            emailErr = '';
+            phoneNumErr = '';
+            invEmailErr = '';
+            invPhoneErr = '';
+            existPhoneErr = '';
+            firstNameErr = '';
+            success = 'Phone Verification Sent!';
 
-              // Add a delay of 2 seconds before navigating to the new page
-              Future.delayed(Duration(seconds: 2), () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Verification(
-                    first_name: firstNameController.text,
-                    last_name: lastNameController.text,
-                    phone_number: phoneNumberController.text,
-                    email: emailController.text,
-                    country_code: countryCode,
-                  )),
-                );
-              });
+            // Add a delay of 2 seconds before navigating to the new page
+            Future.delayed(Duration(seconds: 2), () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => Verification(
+                          first_name: firstNameController.text,
+                          last_name: lastNameController.text,
+                          phone_number: phoneNumberController.text,
+                          email: emailController.text,
+                          country_code: countryCode,
+                        )),
+              );
             });
+          });
         }
       }
     } catch (e) {
@@ -184,51 +180,51 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               children: <Widget>[
                 Container(
-                          // margin: const EdgeInsets.only(bottom: 5),
-                          height: MediaQuery.of(context).size.height * 0.3,
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [Colors.orangeAccent, Colors.orangeAccent],
-                              end: Alignment.bottomCenter,
-                              begin: Alignment.topCenter,
-                            ),
-                            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(100)),
-                          ),
-                          child: Center(
-                            child: Transform.scale(
-                              scale: 2, // Adjust the scale factor as needed
-                              child: const Image(
-                                image: AssetImage('images/splashLogo.png'),
-                              ),
-                            ),
-                          ),
-                        ),
+                  // margin: const EdgeInsets.only(bottom: 5),
+                  height: MediaQuery.of(context).size.height * 0.3,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.orangeAccent, Colors.orangeAccent],
+                      end: Alignment.bottomCenter,
+                      begin: Alignment.topCenter,
+                    ),
+                    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(100)),
+                  ),
+                  child: Center(
+                    child: Transform.scale(
+                      scale: 2, // Adjust the scale factor as needed
+                      child: const Image(
+                        image: AssetImage('images/splashLogo.png'),
+                      ),
+                    ),
+                  ),
+                ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                 Container(
-                alignment: Alignment.centerLeft, 
-                  margin: const EdgeInsets.only(left: 25, right: 25),// Align the text to the right within its container
-                child: Text(
-                  'Register,',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.grey.shade600,
-                    height: 1.5,
+                  alignment: Alignment.centerLeft,
+                  margin: const EdgeInsets.only(left: 25, right: 25), // Align the text to the right within its container
+                  child: Text(
+                    'Register,',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.grey.shade600,
+                      height: 1.5,
+                    ),
                   ),
                 ),
-              ),
-                 Container(
-                    alignment: Alignment.centerLeft, 
-                    margin: const EdgeInsets.only(left: 25, right: 25),// Align the text to the right within its container
-                    child: Text(
+                Container(
+                  alignment: Alignment.centerLeft,
+                  margin: const EdgeInsets.only(left: 25, right: 25), // Align the text to the right within its container
+                  child: Text(
                     'Enter your details to create an account.',
                     style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                    height: 1.5,
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                      height: 1.5,
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                 Container(
                   margin: const EdgeInsets.only(left: 25, right: 25),
                   child: Row(
@@ -251,7 +247,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 controller: firstNameController,
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
-                                  hintText:  "First Name",
+                                  hintText: "First Name",
                                   prefixIcon: Icon(Icons.person),
                                 ),
                               ),
@@ -270,21 +266,21 @@ class _RegisterPageState extends State<RegisterPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Colors.white,
-                                  border: Border.all(color: Colors.grey), // Add a border
-                                ),
-                                padding: const EdgeInsets.only(left: 10),
-                                margin: const EdgeInsets.only(bottom: 10),
-                                child: TextFormField(
-                                  controller: lastNameController,
-                                  decoration: const InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: "Last Name",
-                                  ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: Colors.white,
+                                border: Border.all(color: Colors.grey), // Add a border
+                              ),
+                              padding: const EdgeInsets.only(left: 10),
+                              margin: const EdgeInsets.only(bottom: 10),
+                              child: TextFormField(
+                                controller: lastNameController,
+                                decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: "Last Name",
                                 ),
                               ),
+                            ),
                             Align(
                               alignment: Alignment.bottomLeft,
                               child: showErrorMsg(lastNameErr),
@@ -295,99 +291,104 @@ class _RegisterPageState extends State<RegisterPage> {
                     ],
                   ),
                 ),
-                    Container(
-                      margin: const EdgeInsets.only(left:20, right: 20,),
-                        child: Column(
-                          children: <Widget> [
-                           Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    color: Colors.white,
-                                    border: Border.all(color: Colors.grey), // Add a border
-                                  ),
-                                  padding: const EdgeInsets.only(left: 10),
-                                  margin: const EdgeInsets.only(bottom: 10),
-                                  child: TextFormField(
-                                    controller: emailController,
-                                    decoration: const InputDecoration(
-                                      border: InputBorder.none,
-                                      hintText: "Email",
-                                      prefixIcon: Icon(Icons.email),
-                                    ),
-                                  ),
-                                ),
-                          ],
+                Container(
+                  margin: const EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                  ),
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.white,
+                          border: Border.all(color: Colors.grey), // Add a border
                         ),
-                      ),
-                       Align(
-                          alignment: Alignment.bottomLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 20, right: 20), 
-                          child:showErrorMsg(emailErr, error2: invEmailErr),
+                        padding: const EdgeInsets.only(left: 10),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          controller: emailController,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: "Email",
+                            prefixIcon: Icon(Icons.email),
                           ),
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 20, right: 20),
+                    child: showErrorMsg(emailErr, error2: invEmailErr),
+                  ),
+                ),
 
+                Container(
+                  margin: const EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                  ),
+                  child: Column(
+                    children: <Widget>[
                       Container(
-                        margin: const EdgeInsets.only(left:20, right: 20,),
-                        child: Column(
-                          children: <Widget> [
-                           Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: Colors.white,
-                                border: Border.all(color: Colors.grey), // Add a border
-                              ),
-                              padding: const EdgeInsets.only(left: 10),
-                              margin: const EdgeInsets.only(bottom: 10),
-                              child: TextFormField(
-                                controller: phoneNumberController,
-                                onFieldSubmitted: (phoneNumber) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('+${country.phoneCode}$phoneNumber')),
-                                  );
-                                },
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: "Phone Number",
-                                  prefixIcon: GestureDetector(
-                                    onTap: showPicker,
-                                    child: Container(
-                                      height: 55,
-                                      width: 100,
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        '${country.flagEmoji} +${country.phoneCode}',
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.white,
+                          border: Border.all(color: Colors.grey), // Add a border
+                        ),
+                        padding: const EdgeInsets.only(left: 10),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          controller: phoneNumberController,
+                          onFieldSubmitted: (phoneNumber) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('+${country.phoneCode}$phoneNumber')),
+                            );
+                          },
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: "Phone Number",
+                            prefixIcon: GestureDetector(
+                              onTap: showPicker,
+                              child: Container(
+                                height: 55,
+                                width: 100,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '${country.flagEmoji} +${country.phoneCode}',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                             ),
-
-                          ],
-                        ),
-                      ),
-                       Align(
-                          alignment: Alignment.bottomLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 20, right: 20), // Adjust the top padding as needed
-                          child: showErrorMsg(phoneNumErr, error2: invPhoneErr, error3: existPhoneErr),
                           ),
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 20, right: 20), // Adjust the top padding as needed
+                    child: showErrorMsg(phoneNumErr, error2: invPhoneErr, error3: existPhoneErr),
+                  ),
+                ),
                 Visibility(
                   visible: success != '' ? true : false,
                   child: Text(success, style: const TextStyle(color: Colors.green)),
                 ),
-                 SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.04),
                 // Register Submit button
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -410,7 +411,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                 ),
-        
+
                 // Check in navigation
                 const SizedBox(height: 5),
                 Padding(

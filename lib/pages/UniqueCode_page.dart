@@ -1,10 +1,11 @@
+import '/pages/assets.dart';
 import 'dart:convert';
-import 'package:development/pages/dashboard_page.dart';
+import '/pages/dashboard_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:lottie/lottie.dart';
+import 'package:lottie/lottie.dart'; 
 
 class UniqueCode extends StatefulWidget {
   final String phoneNumber;
@@ -73,7 +74,20 @@ class _UniqueCodeState extends State<UniqueCode> {
     return isResendSuccess = false;
   }
 
-  Future<void> sendCode() async { 
+  void _cookieSession(String cookie) async {
+    int position1 = cookie.indexOf("MANOM=");
+    int position2 = cookie.indexOf(";", position1);
+    session["sessionCookie1"] = sessionCookie1 = cookie.substring(position1 + 6, position2);
+    int position3 = cookie.indexOf("MNCOOKIE=");
+    int position4 = cookie.indexOf(";", position3);
+    session["sessionCookie2"] = sessionCookie2 = cookie.substring(position3 + 9, position4);
+    int position5 = cookie.indexOf("MNTOKENS=");
+    int position6 = cookie.indexOf(";", position5);
+    session["sessionCookie3"] = sessionCookie3 = cookie.substring(position5 + 9, position6);
+    storeSession(session); 
+  }
+
+  Future<void> sendCode() async {
     final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/login"), body: {
       'phone_number': widget.phoneNumber,
       'country_code': widget.countryCode,
@@ -81,25 +95,27 @@ class _UniqueCodeState extends State<UniqueCode> {
     });
 
     if (res.statusCode == 200) {
-      final Map<String, dynamic> responseData = json.decode(res.body); 
+      final Map<String, dynamic> responseData = json.decode(res.body);
 
       if (responseData['status'].toString() == 'false') {
         setState(() {
           invalidPassCode = responseData['message'];
         });
-      } else { 
+      } else {
+        print(responseData);
+        _cookieSession(res.headers["set-cookie"].toString());
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => DashboardPage(
-              memberId: responseData['session']['member_id'],
-              firstName: responseData['session']['first_name'],
-              lastName: responseData['session']['last_name'],
-              email: responseData['session']['email'],
-              countryCode: responseData['session']['country_code'],
-              phoneNumber: responseData['session']['phone_number'],
-              role: responseData['session']['role'],
-              qrCode: responseData['session']['qr'],
+              memberId: responseData['member_id'],
+              firstName: responseData['first_name'],
+              lastName: responseData['last_name'],
+              email: responseData['email'],
+              countryCode: responseData['country_code'],
+              phoneNumber: responseData['phone_number'],
+              role: responseData['role'],
+              qrCode: responseData['qr'],
             ),
           ),
         );
@@ -107,7 +123,7 @@ class _UniqueCodeState extends State<UniqueCode> {
     } else {
       print("Request failed with status: ${res.statusCode}");
     }
-  } 
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +137,9 @@ class _UniqueCodeState extends State<UniqueCode> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 30,),
+                const SizedBox(
+                  height: 30,
+                ),
                 Container(
                   width: MediaQuery.of(context).size.width * 0.4,
                   height: MediaQuery.of(context).size.width * 0.4,
@@ -174,8 +192,11 @@ class _UniqueCodeState extends State<UniqueCode> {
                 ),
                 Container(
                   margin: const EdgeInsets.only(top: 10),
-                  child: Text(invalidPassCode ?? '', style: const TextStyle(color: Colors.red),),
-                ), 
+                  child: Text(
+                    invalidPassCode ?? '',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.02),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -220,7 +241,7 @@ class _UniqueCodeState extends State<UniqueCode> {
                         borderRadius: BorderRadius.circular(100),
                       ),
                       child: _isLoading
-                          ? const  SizedBox(
+                          ? const SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(

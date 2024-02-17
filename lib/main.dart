@@ -1,17 +1,17 @@
-import 'package:development/pages/Approval_page.dart';
-import 'package:development/pages/dashboard_page.dart';
-import 'package:development/pages/login_page.dart';
-import 'package:development/pages/qr_code_page.dart';
-import 'package:development/pages/register_page.dart';
-import 'package:development/pages/splash_page.dart';
-import 'package:development/pages/validation_page.dart';
+import 'pages/Approval_page.dart';
+import 'pages/dashboard_page.dart';
+import 'pages/login_page.dart';
+import 'pages/qr_code_page.dart';
+import 'pages/register_page.dart';
+import 'pages/splash_page.dart';
+import 'pages/validation_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; 
+import 'dart:convert';
 
-void main() { 
+void main() {
   runApp(const MyApp());
-} 
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
 }
 
 class Dashboard extends StatelessWidget {
-  const Dashboard({super.key}); 
+  const Dashboard({super.key});
 
   @override
   Widget build(BuildContext context) {

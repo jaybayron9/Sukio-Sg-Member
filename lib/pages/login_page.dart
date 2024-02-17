@@ -1,16 +1,16 @@
 // ignore_for_file: library_private_types_in_public_api, avoid_print, use_build_context_synchronously
-
-import 'package:development/pages/UniqueCode_page.dart';
-import 'package:development/pages/register_page.dart';
+import '/pages/assets.dart';
+import '/pages/UniqueCode_page.dart';
+import '/pages/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:country_picker/country_picker.dart'; 
+import 'package:country_picker/country_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
-import 'package:url_launcher/url_launcher.dart';  
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -19,10 +19,10 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> { 
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController phoneNumberController = TextEditingController();
 
-  String? scannedQRData; 
+  String? scannedQRData;
 
   Future<void> _showScanResultDialog(String qrdata) async {
     return showDialog(
@@ -33,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
           content: RichText(
             text: TextSpan(
               text: 'Scanned QR Code: ',
-              style: const  TextStyle(color: Colors.black),
+              style: const TextStyle(color: Colors.black),
               children: [
                 TextSpan(
                   text: qrdata,
@@ -120,9 +120,22 @@ class _LoginPageState extends State<LoginPage> {
   String phoneNotFoundErr = '';
   String notApprove = '';
 
+  void _cookieSession(String cookie) async {
+    int position1 = cookie.indexOf("MANOM=");
+    int position2 = cookie.indexOf(";", position1);
+    session["sessionCookie1"] = sessionCookie1 = cookie.substring(position1 + 6, position2);
+    int position3 = cookie.indexOf("MNCOOKIE=");
+    int position4 = cookie.indexOf(";", position3);
+    session["sessionCookie2"] = sessionCookie2 = cookie.substring(position3 + 9, position4);
+    int position5 = cookie.indexOf("MNTOKENS=");
+    int position6 = cookie.indexOf(";", position5);
+    session["sessionCookie3"] = sessionCookie3 = cookie.substring(position5 + 9, position6);
+    storeSession(session); 
+  }
+
   Future<void> sendData() async {
-    try { 
-      final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/login"), body: { 
+    try {
+      final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/login"), body: {
         'phone_number': phoneNumberController.text,
         'country_code': countryCode,
       });
@@ -133,33 +146,33 @@ class _LoginPageState extends State<LoginPage> {
 
         if (responseData['status'].toString() == 'false') {
           print(responseData);
-          setState(() { 
+          setState(() {
             emptyPhonErr = responseData['empty_phone'];
-            notApprove = responseData['not_approved']; 
+            notApprove = responseData['not_approved'];
 
             if (responseData['empty_phone'] == '') {
-              phoneNotFoundErr = responseData['not_found']; 
-            } 
+              phoneNotFoundErr = responseData['not_found'];
+            }
           });
-        } else {  
-          print(responseData);
+        } else {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => UniqueCode( 
+              builder: (context) => UniqueCode(
                 phoneNumber: phoneNumberController.text,
                 countryCode: countryCode,
               ),
             ),
           );
-        } 
+          _cookieSession(res.headers["set-cookie"].toString()); 
+        }
       } else {
         print("Request failed with status: ${res.statusCode}");
       }
     } catch (e) {
       print('Error: $e');
     }
-  } 
+  }
 
   void showPicker() {
     showCountryPicker(
@@ -175,30 +188,33 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  showError (value1, value2, value3) { 
+  showError(value1, value2, value3) {
     if (value1 != '') {
-      return Container( 
+      return Container(
         margin: const EdgeInsets.only(left: 25, bottom: 20),
-          child: Text(value1,
-          style: const TextStyle( color: Colors.red),
+        child: Text(
+          value1,
+          style: const TextStyle(color: Colors.red),
         ),
       );
     }
 
     if (value2 != '') {
-      return Container( 
+      return Container(
         margin: const EdgeInsets.only(left: 25, bottom: 20),
-          child: Text(value2,
-          style: const  TextStyle( color: Colors.red),
+        child: Text(
+          value2,
+          style: const TextStyle(color: Colors.red),
         ),
       );
     }
 
     if (value3 != '') {
-      return Container( 
+      return Container(
         margin: const EdgeInsets.only(left: 25, bottom: 20),
-          child: Text(value3,
-          style: const TextStyle( color: Colors.red),
+        child: Text(
+          value3,
+          style: const TextStyle(color: Colors.red),
         ),
       );
     }
@@ -212,35 +228,35 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Form( 
+        child: Form(
           child: SingleChildScrollView(
             child: Column(
               children: <Widget>[
                 Stack(
                   children: [
                     Container(
-                        // margin: const EdgeInsets.only(bottom: 5),
-                        height: MediaQuery.of(context).size.height * 0.3,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.orangeAccent, Colors.orangeAccent],
-                            end: Alignment.bottomCenter,
-                            begin: Alignment.topCenter,
-                          ),
-                          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(100)),
+                      // margin: const EdgeInsets.only(bottom: 5),
+                      height: MediaQuery.of(context).size.height * 0.3,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.orangeAccent, Colors.orangeAccent],
+                          end: Alignment.bottomCenter,
+                          begin: Alignment.topCenter,
                         ),
-                        child: Center(
-                          child: Transform.scale(
-                            scale: 2, // Adjust the scale factor as needed
-                            child: const Image(
-                              image: AssetImage('images/splashLogo.png'),
-                            ),
+                        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(100)),
+                      ),
+                      child: Center(
+                        child: Transform.scale(
+                          scale: 2, // Adjust the scale factor as needed
+                          child: const Image(
+                            image: AssetImage('images/splashLogo.png'),
                           ),
                         ),
                       ),
+                    ),
                     Positioned(
-                      top: 20, 
-                      right: 20, 
+                      top: 20,
+                      right: 20,
                       child: IconButton(
                         onPressed: _qrScanner,
                         icon: Icon(Icons.qr_code_scanner),
@@ -250,69 +266,69 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ],
                 ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-              Container(
-                alignment: Alignment.centerLeft, 
-                  margin: const EdgeInsets.only(left: 25, right: 25),// Align the text to the right within its container
-                child: const Text(
-                  'Hello,',
-                  style: TextStyle(
-                    fontSize: 30,
-                    color: Colors.grey,
-                    height: 1.5,
+                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                Container(
+                  alignment: Alignment.centerLeft,
+                  margin: const EdgeInsets.only(left: 25, right: 25), // Align the text to the right within its container
+                  child: const Text(
+                    'Hello,',
+                    style: TextStyle(
+                      fontSize: 30,
+                      color: Colors.grey,
+                      height: 1.5,
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                alignment: Alignment.centerLeft, 
-                  margin: const EdgeInsets.only(left: 20, right: 20),// Align the text to the right within its container
-                child: const Text(
-                  'Welcome!',
-                  style: TextStyle(
-                    fontSize: 45,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orangeAccent,
-                    height: 1.5,
+                Container(
+                  alignment: Alignment.centerLeft,
+                  margin: const EdgeInsets.only(left: 20, right: 20), // Align the text to the right within its container
+                  child: const Text(
+                    'Welcome!',
+                    style: TextStyle(
+                      fontSize: 45,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orangeAccent,
+                      height: 1.5,
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-              Container(
-                alignment: Alignment.centerLeft, 
-                  margin: const EdgeInsets.only(left: 25, right: 25),// Align the text to the right within its container
-                child: Text(
-                  'Check-in,',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.grey.shade600,
-                    height: 1.5,
+                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                Container(
+                  alignment: Alignment.centerLeft,
+                  margin: const EdgeInsets.only(left: 25, right: 25), // Align the text to the right within its container
+                  child: Text(
+                    'Check-in,',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.grey.shade600,
+                      height: 1.5,
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                alignment: Alignment.centerLeft, 
-                margin: const EdgeInsets.only(left: 25, right: 25),// Align the text to the right within its container
-                child: Text(
+                Container(
+                  alignment: Alignment.centerLeft,
+                  margin: const EdgeInsets.only(left: 25, right: 25), // Align the text to the right within its container
+                  child: Text(
                     'Enter your register phone number to access your account.',
                     style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                    height: 1.5,
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                      height: 1.5,
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
                 Container(
                   margin: const EdgeInsets.only(left: 25, right: 25),
                   child: Column(
-                    children: <Widget>[ 
+                    children: <Widget>[
                       Container(margin: const EdgeInsets.only(bottom: 10)),
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           color: Colors.white,
                           border: Border.all(color: Colors.grey, width: 1.0), // Add a border
-                        ), 
+                        ),
                         child: TextFormField(
                           controller: phoneNumberController,
                           onFieldSubmitted: (phoneNumber) {
@@ -348,21 +364,19 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                         ),
-                      ), 
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          showError(emptyPhonErr, phoneNotFoundErr, notApprove)
-                        ],
-                      ), 
+                        children: [showError(emptyPhonErr, phoneNotFoundErr, notApprove)],
+                      ),
                       SizedBox(height: MediaQuery.of(context).size.height * 0.04),
                       SizedBox(
                         width: double.infinity,
                         height: 40,
                         child: ElevatedButton(
                           onPressed: () {
-                            countryCode = country!.phoneCode; 
-                            sendData(); 
+                            countryCode = country!.phoneCode;
+                            sendData();
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orangeAccent,
@@ -379,7 +393,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                         ),
-                      ), 
+                      ),
                       GestureDetector(
                         onTap: () {
                           Navigator.push(

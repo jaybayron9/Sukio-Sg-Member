@@ -1,5 +1,5 @@
-import 'package:development/pages/login_page.dart';
-import 'package:development/pages/register_page.dart';
+import '/pages/login_page.dart';
+import '/pages/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -11,7 +11,6 @@ class ApprovalPage extends StatefulWidget {
 }
 
 class _ApprovalPageState extends State<ApprovalPage> {
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -24,7 +23,9 @@ class _ApprovalPageState extends State<ApprovalPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 30,),
+                const SizedBox(
+                  height: 30,
+                ),
                 Align(
                   alignment: Alignment.center,
                   child: Padding(
@@ -39,9 +40,7 @@ class _ApprovalPageState extends State<ApprovalPage> {
                       ),
                       child: FittedBox(
                         fit: BoxFit.contain,
-                          child: Lottie.network(
-                            'https://lottie.host/5cf76cdf-13d5-4eed-98fe-c143b22d73fe/U9bqqoM2Ez.json'
-                          ),
+                        child: Lottie.network('https://lottie.host/5cf76cdf-13d5-4eed-98fe-c143b22d73fe/U9bqqoM2Ez.json'),
                       ),
                     ),
                   ),
@@ -71,17 +70,17 @@ class _ApprovalPageState extends State<ApprovalPage> {
                     height: 1.5,
                   ),
                 ),
-                 SizedBox(height: MediaQuery.of(context).size.height * 0.10),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.10),
                 FractionallySizedBox(
                   widthFactor: 0.5, // Adjust the width factor according to your preference
                   child: MaterialButton(
                     disabledColor: Colors.grey.shade300,
                     onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()),
-                        );
-                      },
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                      );
+                    },
                     color: Colors.orangeAccent,
                     height: MediaQuery.of(context).size.height * 0.05,
                     shape: RoundedRectangleBorder(

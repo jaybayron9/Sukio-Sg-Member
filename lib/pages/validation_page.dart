@@ -1,8 +1,8 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'dart:convert';
-import 'package:development/pages/Approval_page.dart';
-import 'package:development/pages/login_page.dart';
+import '/pages/Approval_page.dart';
+import '/pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'dart:async';
@@ -62,12 +62,10 @@ class _VerificationState extends State<Verification> {
   bool isResendSuccess = false;
 
   Future<bool> resendOTP() async {
-    final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/sendOTP"),
-      body: {  
-        'phone_number': widget.phone_number,
-        'country_code': widget.country_code,
-      }
-    );
+    final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/sendOTP"), body: {
+      'phone_number': widget.phone_number,
+      'country_code': widget.country_code,
+    });
 
     if (res.statusCode == 200) {
       final Map<String, dynamic> responseData = json.decode(res.body);
@@ -83,8 +81,8 @@ class _VerificationState extends State<Verification> {
     return isResendSuccess = false;
   }
 
-  // Future<void> sendData() async { 
-  //     final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/verifyPhone"), 
+  // Future<void> sendData() async {
+  //     final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/verifyPhone"),
   //     body: {
   //       'first_name': widget.first_name,
   //       'last_name': widget.last_name,
@@ -97,46 +95,46 @@ class _VerificationState extends State<Verification> {
   //     if (res.statusCode == 200) {
   //       final Map<String, dynamic> responseData = json.decode(res.body);
   //       print(responseData);
-  //       return responseData['status']; 
-  //     }  
+  //       return responseData['status'];
+  //     }
   // }
 
-  Future<void> verifyPhone() async { 
+  Future<void> verifyPhone() async {
     try {
-        final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/verifyPhone"), body: {
-          'first_name': widget.first_name,
-          'last_name': widget.last_name,
-          'email': widget.email,
-          'country_code': widget.country_code,
-          'phone_number': widget.phone_number,
-          'phone_code': _code,
-        });
+      final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/verifyPhone"), body: {
+        'first_name': widget.first_name,
+        'last_name': widget.last_name,
+        'email': widget.email,
+        'country_code': widget.country_code,
+        'phone_number': widget.phone_number,
+        'phone_code': _code,
+      });
 
-        if (res.statusCode == 200) {
-          final Map<String, dynamic> responseData = json.decode(res.body);
+      if (res.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(res.body);
 
-          print(responseData);
+        print(responseData);
 
-          if (responseData['status'].toString() == 'true' ) {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text("Success"),
-                  content: Text(responseData['message'].toString()),
-                );
-              },
-            );
-
-            Future.delayed(const Duration(seconds: 8), () {
-              Navigator.of(context).pop(); // Close the dialog
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginPage()),
+        if (responseData['status'].toString() == 'true') {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Success"),
+                content: Text(responseData['message'].toString()),
               );
-            });
-          }
-        } 
+            },
+          );
+
+          Future.delayed(const Duration(seconds: 8), () {
+            Navigator.of(context).pop(); // Close the dialog
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            );
+          });
+        }
+      }
     } catch (e) {
       print("Error: $e");
     }
@@ -145,47 +143,47 @@ class _VerificationState extends State<Verification> {
   String? _verificationError;
 
   // verify() async {
-    // setState(() {
-    //   _isLoading = true;
-    //   _verificationError = null;
-    // });
-    // sendData();
-    // const oneSec = Duration(milliseconds: 500);
+  // setState(() {
+  //   _isLoading = true;
+  //   _verificationError = null;
+  // });
+  // sendData();
+  // const oneSec = Duration(milliseconds: 500);
 
-    // _timer = Timer.periodic(oneSec, (timer) async {
-      // try {
-        // List resposeData = sendData(_code, widget.country_code, widget.phone_number,widget.first_name, widget.last_name, widget.email);
+  // _timer = Timer.periodic(oneSec, (timer) async {
+  // try {
+  // List resposeData = sendData(_code, widget.country_code, widget.phone_number,widget.first_name, widget.last_name, widget.email);
 
-        // print(resposeData);
+  // print(resposeData);
 
-        // setState(() {
-        //   _isLoading = false;
-        //   _isVerified = resposeData.toString() == 'true' ? true : false;
-        // });
+  // setState(() {
+  //   _isLoading = false;
+  //   _isVerified = resposeData.toString() == 'true' ? true : false;
+  // });
 
-    //     if (_isVerified) {
-    //         Navigator.pushReplacement(
-    //         context,
-    //         MaterialPageRoute(builder: (context) => const ApprovalPage()),
-    //       );
-    //       timer.cancel(); // Cancel the timer as verification is successful
-    //     } else {
+  //     if (_isVerified) {
+  //         Navigator.pushReplacement(
+  //         context,
+  //         MaterialPageRoute(builder: (context) => const ApprovalPage()),
+  //       );
+  //       timer.cancel(); // Cancel the timer as verification is successful
+  //     } else {
 
-    //       // Delayed execution to clear the error message after 3 seconds
-    //       Future.delayed(Duration(seconds: 2), () {
-    //         setState(() {
-    //           _verificationError = null;
-    //         });
-    //       });
-    //     }
-    //   } catch (e) {
-    //     setState(() {
-    //       _isLoading = false;
-    //       _isVerified = false; // Set to false if verification fails
-    //       _verificationError = "Error occurred during verification"; // Set the error message
-    //     });
-    //   }
-    // });
+  //       // Delayed execution to clear the error message after 3 seconds
+  //       Future.delayed(Duration(seconds: 2), () {
+  //         setState(() {
+  //           _verificationError = null;
+  //         });
+  //       });
+  //     }
+  //   } catch (e) {
+  //     setState(() {
+  //       _isLoading = false;
+  //       _isVerified = false; // Set to false if verification fails
+  //       _verificationError = "Error occurred during verification"; // Set the error message
+  //     });
+  //   }
+  // });
   // }
 
   @override
@@ -200,7 +198,9 @@ class _VerificationState extends State<Verification> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 30,),
+                const SizedBox(
+                  height: 30,
+                ),
                 Container(
                   width: MediaQuery.of(context).size.width * 0.4,
                   height: MediaQuery.of(context).size.width * 0.4,
@@ -214,12 +214,12 @@ class _VerificationState extends State<Verification> {
                     child: Transform.rotate(
                       angle: 38,
                       child: SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.4,
-                            height: MediaQuery.of(context).size.width * 0.4,
-                            child: Lottie.network(
-                              'https://lottie.host/4f09a893-a40c-4f46-bc25-15c3e7f71d55/Lhr2Wq0MGX.json',
-                            ),
-                          ),
+                        width: MediaQuery.of(context).size.width * 0.4,
+                        height: MediaQuery.of(context).size.width * 0.4,
+                        child: Lottie.network(
+                          'https://lottie.host/4f09a893-a40c-4f46-bc25-15c3e7f71d55/Lhr2Wq0MGX.json',
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -285,7 +285,7 @@ class _VerificationState extends State<Verification> {
                       disabledColor: Colors.grey.shade300,
                       onPressed: () {
                         verifyPhone();
-                      }, 
+                      },
                       color: Colors.orangeAccent,
                       minWidth: double.infinity,
                       height: MediaQuery.of(context).size.height * 0.05,
@@ -293,7 +293,7 @@ class _VerificationState extends State<Verification> {
                         borderRadius: BorderRadius.circular(100),
                       ),
                       child: _isLoading
-                          ? const  SizedBox(
+                          ? const SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
