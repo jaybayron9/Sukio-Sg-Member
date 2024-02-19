@@ -1,4 +1,6 @@
 // import 'package:flutter/gestures.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '/pages/login_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -105,9 +107,34 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  Future<String?> getFromLocalStorage() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('member_id');
+  }
+
+  Future<void> deleteFromLocalStorage() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('member_id');
+  } 
+
   @override
   void initState() {
-    super.initState();
+    super.initState(); 
+
+    getFromLocalStorage().then((storedValue) {
+      if (storedValue != null) { 
+        print('Value from Local Storage: $storedValue');
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginPage(),
+          ),
+        ); 
+        print('Value not found in Local Storage.');
+      }
+    });
+
     imageUrl = 'https://ww2.selfiesmile.app/img/qrcodes/member_${widget.memberId}_${widget.qrCode}.png';
   }
 
@@ -187,7 +214,7 @@ class _DashboardPageState extends State<DashboardPage> {
               },
             ),
             ListTile(
-              title: const Text('QR'),
+              title: const Text('Notifications'),
               selected: _selectedIndex == 2,
               onTap: () {
                 _onItemTapped(2);
@@ -195,8 +222,18 @@ class _DashboardPageState extends State<DashboardPage> {
               },
             ),
             ListTile(
+              title: const Text('QR'),
+              selected: _selectedIndex == 3,
+              onTap: () {
+                _onItemTapped(3);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
               title: const Text('Logout'),
               onTap: () {
+                deleteFromLocalStorage();
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -213,6 +250,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   List<Widget> get _widgetOptions {
     return [
+      // Attendance
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -245,11 +283,16 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
         ],
-      ),
+      ), 
+      // Group Calendar
       const Text(
-        'Index 1: Business',
+        'Member Callendar',
         style: optionStyle,
       ),
+      const Text(
+        'Notifications',
+        style: optionStyle,
+      ), 
       Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -278,7 +321,7 @@ class _DashboardPageState extends State<DashboardPage> {
       const Text(
         'Settings',
         style: optionStyle,
-      ),
+      ), 
     ];
   }
 

@@ -1,5 +1,6 @@
-import '/pages/assets.dart';
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '/pages/dashboard_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
@@ -74,17 +75,9 @@ class _UniqueCodeState extends State<UniqueCode> {
     return isResendSuccess = false;
   }
 
-  void _cookieSession(String cookie) async {
-    int position1 = cookie.indexOf("MANOM=");
-    int position2 = cookie.indexOf(";", position1);
-    session["sessionCookie1"] = sessionCookie1 = cookie.substring(position1 + 6, position2);
-    int position3 = cookie.indexOf("MNCOOKIE=");
-    int position4 = cookie.indexOf(";", position3);
-    session["sessionCookie2"] = sessionCookie2 = cookie.substring(position3 + 9, position4);
-    int position5 = cookie.indexOf("MNTOKENS=");
-    int position6 = cookie.indexOf(";", position5);
-    session["sessionCookie3"] = sessionCookie3 = cookie.substring(position5 + 9, position6);
-    storeSession(session); 
+  Future<void> saveTolocalStorage(id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('member_id', id);
   }
 
   Future<void> sendCode() async {
@@ -103,7 +96,9 @@ class _UniqueCodeState extends State<UniqueCode> {
         });
       } else {
         print(responseData);
-        _cookieSession(res.headers["set-cookie"].toString());
+
+        await saveTolocalStorage(responseData['member_id']);
+
         Navigator.push(
           context,
           MaterialPageRoute(

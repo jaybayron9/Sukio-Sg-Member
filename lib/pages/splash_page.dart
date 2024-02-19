@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '/pages/register_page.dart';
 import '/utils/color.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'login_page.dart';
+import '/pages/dashboard_page.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -13,19 +16,11 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> {
-  Future<void> auth() async {
-    final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/auth"), headers: {});
-    if (res.statusCode == 200) {
-      final Map<String, dynamic> responseData = json.decode(res.body);
-
-      print(responseData);
-    }
-  }
-
+class _SplashPageState extends State<SplashPage> { 
   @override
   void initState() {
-    super.initState();
+    super.initState();  
+
     Timer(const Duration(milliseconds: 4000), () {
       Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
     });

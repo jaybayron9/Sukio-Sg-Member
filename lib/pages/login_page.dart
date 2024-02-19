@@ -1,4 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api, avoid_print, use_build_context_synchronously
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '/pages/dashboard_page.dart'; 
 import '/pages/assets.dart';
 import '/pages/UniqueCode_page.dart';
 import '/pages/register_page.dart';
@@ -222,6 +225,56 @@ class _LoginPageState extends State<LoginPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
     );
+  }
+
+  Future<String?> getFromLocalStorage() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('member_id');
+  }
+
+  Future<void> auth(memberId) async {  
+    final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/auth"), body: {
+      'member_id': memberId
+    });
+
+    if (res.statusCode == 200) {
+      final Map<String, dynamic> responseData = json.decode(res.body);  
+
+      if (responseData['status'].toString() == 'true') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DashboardPage(
+              memberId: responseData['member_id'],
+              firstName: responseData['first_name'],
+              lastName: responseData['last_name'],
+              email: responseData['email'],
+              countryCode: responseData['country_code'],
+              phoneNumber: responseData['phone_number'],
+              role: responseData['role'],
+              qrCode: responseData['qr'],
+            ),
+          ),
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginPage(),
+          ),
+        );
+      }
+    } 
+  }
+
+  void initState() {
+    super.initState();   
+
+    getFromLocalStorage().then((storedValue) {
+      if (storedValue != null) {  
+        auth(storedValue.toString());  
+      }
+    }); 
   }
 
   @override
