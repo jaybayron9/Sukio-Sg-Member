@@ -1,4 +1,6 @@
-import 'pages/splash_page.dart'; 
+import 'package:table_calendar/table_calendar.dart';
+import 'dart:collection'; 
+import 'pages/splash_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -20,4 +22,4 @@ class MyApp extends StatelessWidget {
       home: const SplashPage(),
     );
   }
-} 
+}

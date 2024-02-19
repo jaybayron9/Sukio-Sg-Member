@@ -20,6 +20,7 @@ dependencies:
   qrscan: ^0.3.2
   permission_handler:
   shared_preferences: ^2.2.2 
+  table_calendar: ^3.1.0
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,6 @@
 // import 'package:flutter/gestures.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 import '/pages/login_page.dart';
 import 'package:flutter/gestures.dart';
@@ -206,7 +207,7 @@ class _DashboardPageState extends State<DashboardPage> {
               },
             ),
             ListTile(
-              title: const Text('Group'),
+              title: const Text('Calendar'),
               selected: _selectedIndex == 1,
               onTap: () {
                 _onItemTapped(1);
@@ -251,12 +252,12 @@ class _DashboardPageState extends State<DashboardPage> {
   List<Widget> get _widgetOptions {
     return [
       // Attendance
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: FutureBuilder<List<Map<String, dynamic>>>(
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FutureBuilder<List<Map<String, dynamic>>>(
               future: fetchData(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -279,15 +280,25 @@ class _DashboardPageState extends State<DashboardPage> {
                     ]);
                   }).toList(),
                 );
-              },
-            ),
-          ),
-        ],
-      ), 
+              }, 
+            )
+          ],
+        ),
+      ),
       // Group Calendar
-      const Text(
-        'Member Callendar',
-        style: optionStyle,
+      Container(
+        margin: const EdgeInsets.all(20),
+        child: Center(
+          child: TableCalendar(
+            firstDay: DateTime.utc(2010, 10, 16),
+            lastDay: DateTime.utc(2030, 3, 14),
+            focusedDay: DateTime.now(),
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() { 
+              });
+            },
+          ),
+        ),
       ),
       const Text(
         'Notifications',
