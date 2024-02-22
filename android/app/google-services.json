@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "656878694387",
+    "project_id": "sukio-4b001",
+    "storage_bucket": "sukio-4b001.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:656878694387:android:654f3c7e056cb2da91ac86",
+        "android_client_info": {
+          "package_name": "com.example.qr_gen_scan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBf2bqjdIOy0GT5aGfdIg-TACO4EozIMRc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

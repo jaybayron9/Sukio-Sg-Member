@@ -1,6 +1,5 @@
 // ignore_for_file: library_private_types_in_public_api, avoid_print, use_build_context_synchronously
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:shared_preferences/shared_preferences.dart'; 
 import '/pages/dashboard_page.dart'; 
 import '/pages/assets.dart';
 import '/pages/UniqueCode_page.dart';
@@ -253,6 +252,7 @@ class _LoginPageState extends State<LoginPage> {
               phoneNumber: responseData['phone_number'],
               role: responseData['role'],
               qrCode: responseData['qr'],
+              group: responseData['group'],
             ),
           ),
         );

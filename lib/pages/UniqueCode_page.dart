@@ -111,6 +111,7 @@ class _UniqueCodeState extends State<UniqueCode> {
               phoneNumber: responseData['phone_number'],
               role: responseData['role'],
               qrCode: responseData['qr'],
+              group: responseData['group'],
             ),
           ),
         );
