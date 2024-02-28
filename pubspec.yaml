@@ -21,9 +21,8 @@ dependencies:
   permission_handler:
   shared_preferences: ^2.2.2 
   table_calendar: ^3.1.0
-  awesome_notifications: ^0.9.2 
-  firebase_core: ^2.25.4
-  firebase_messaging: ^14.7.16
+  awesome_notifications: ^0.9.2  
+  google_fonts: ^6.1.0
 
 dev_dependencies:
   flutter_test:

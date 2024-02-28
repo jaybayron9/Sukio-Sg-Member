@@ -88,7 +88,7 @@ class _RegisterPageState extends State<RegisterPage> {
             success = 'Phone Verification Sent!';
 
             // Add a delay of 2 seconds before navigating to the new page
-            Future.delayed(Duration(seconds: 2), () {
+            Future.delayed(Duration(seconds: 1), () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -431,7 +431,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           style: TextStyle(color: Colors.black),
                         ),
                         TextSpan(
-                          text: "Check-in",
+                          text: "Log-in",
                           style: TextStyle(color: Colors.orangeAccent),
                         ),
                       ]),

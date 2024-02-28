@@ -1,4 +1,6 @@
 // import 'package:flutter/gestures.dart';
+import 'package:flutter/widgets.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '/pages/login_page.dart';
@@ -99,12 +101,53 @@ class _DashboardPageState extends State<DashboardPage> {
           );
         }
       }
+    } else {
+      var isGrant = await Permission.camera.request();
+      if (isGrant.isGranted) {
+        String? qrdata = await scanner.scan();
+        if (qrdata != null) {
+          setState(() {
+            scannedQRData = qrdata;
+          });
+
+          final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/attendance/inMember"), body: {'member_id': widget.memberId, 'code': qrdata});
+
+          if (res.statusCode == 200) {
+            final Map<String, dynamic> responseData = json.decode(res.body);
+
+            await showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('Scan Result'),
+                  content: RichText(
+                    text: TextSpan(
+                      text: responseData['message'].toString(),
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+        }
+      }
     }
   }
 
   String imageUrl = ''; 
   Future<void> freshQR() async {
-    final res = await http.post(Uri.parse('https://ww2.selfiesmile.app/members/newQR'), body: {'member_id': widget.memberId});
+    final res = await http.post(Uri.parse('https://ww2.selfiesmile.app/members/newQR'), body: {
+      'member_id': widget.memberId
+    });
 
     if (res.statusCode == 200) {
       final Map<String, dynamic> responseData = json.decode(res.body);
@@ -180,24 +223,13 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.orangeAccent,
-        title: const Text(
-          'Dashboard',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        backgroundColor: Colors.blue.shade900,
+        iconTheme: const IconThemeData(
+          color: Colors.white, // Change the color to your desired color
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_scanner),
-            onPressed: _qrScanner,
-          ),
-        ],
       ),
       body: _widgetOptions[_selectedIndex],
-      drawer: Drawer(
+      drawer: Drawer( 
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
@@ -268,6 +300,13 @@ class _DashboardPageState extends State<DashboardPage> {
               },
             ),
             ListTile(
+              title: const Text('Settings'),
+              onTap: () { 
+                _onItemTapped(4);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
               title: const Text('Logout'),
               onTap: () {
                 deleteFromLocalStorage();
@@ -279,7 +318,21 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 );
               },
+            ), 
+            ListTile(
+              title: const Text('Show Check In Page'),
+              onTap: () { 
+                _onItemTapped(4);
+                Navigator.pop(context);
+              },
             ),
+            ListTile(
+              title: const Text('Show choices checkout'),
+              onTap: () { 
+                _onItemTapped(4);
+                Navigator.pop(context);
+              },
+            ), 
           ],
         ),
       ),
@@ -288,36 +341,113 @@ class _DashboardPageState extends State<DashboardPage> {
 
   List<Widget> get _widgetOptions {
     return [
-      // Attendance
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+      // Attendance 
+      Container(
+        color: Colors.blue.shade900,
+        child: Column(
           children: [
-            FutureBuilder<List<Map<String, dynamic>>>(
-              future: fetchData(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                return DataTable(
-                  columns: const [
-                    DataColumn(label: Text('#')),
-                    DataColumn(label: Text('In')),
-                    DataColumn(label: Text('Out')),
-                    DataColumn(label: Text('Date')),
+            Expanded(
+              child: Container(
+                height: double.infinity,
+                color: Colors.blue.shade900,
+                child: Center(
+                  child: Container(
+                    height: 50,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                      color: Colors.white, 
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                        foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
+                        overlayColor: MaterialStateProperty.resolveWith<Color>(
+                          (Set<MaterialState> states) {
+                            if (states.contains(MaterialState.pressed)) {
+                              return const Color(0xFFDDDDDD);
+                            }
+                            return const Color(0xFFDDDDDD); 
+                          },
+                        ),
+                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: const BorderSide(color: Color(0xFF222222)),
+                          ),
+                        ),
+                        padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.all(13)),
+                        textStyle: MaterialStateProperty.all<TextStyle>(
+                          const TextStyle(
+                            fontFamily: 'Circular',
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF222222),
+                          ),
+                        ),
+                      ),
+                      onPressed: _qrScanner,
+                      child: const Text('Check In'),
+                    ),
+                  ),
+                ),
+              ),
+            ), 
+            Expanded(
+              child: Container (
+                padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
+                height: double.infinity, 
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(30.0)),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey,
+                      offset: Offset(0.0, 1.0), //(x,y)
+                      blurRadius: 5.0,
+                    ),
                   ],
-                  rows: snapshot.data!.map<DataRow>((record) {
-                    return DataRow(cells: [
-                      DataCell(Text(record['id'].toString() == '0' ? '---' : record['id'])),
-                      DataCell(Text(record['check_in'].toString() == 'null' ? '---' : record['check_in'])),
-                      DataCell(Text(record['check_out'].toString() == 'null' ? '---' : record['check_out'])),
-                      DataCell(Text(record['date'].toString() == 'null' ? '---' : record['date']))
-                    ]);
-                  }).toList(),
-                );
-              }, 
+                ), 
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: fetchData(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    return DataTable(
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(30.0)), 
+                      ),
+                      columns: const [ 
+                        DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text('IN', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text('OUT', style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataColumn(label: Text('DATE', style: TextStyle(fontWeight: FontWeight.bold))),
+                      ],
+                      rows: snapshot.data!.asMap().entries.map<DataRow>((entry) { 
+                        final record = entry.value;
+
+                        return DataRow(
+                          cells: [
+                            DataCell(Text(record['id'].toString() == '0' ? '---' : record['id'])),
+                            DataCell(Text(record['check_in'].toString() == 'null' ? '---' : record['check_in'])),
+                            DataCell(Text(record['check_out'].toString() == 'null' ? '---' : record['check_out'])),
+                            DataCell(Text(record['date'].toString() == 'null' ? '---' : record['date']))
+                          ], 
+                        );
+                      }).toList(),
+                    );
+                  }, 
+                ),
+              ), 
             )
           ],
         ),
@@ -414,13 +544,14 @@ class _DashboardPageState extends State<DashboardPage> {
             // ), 
             NotificationCard(
               title: 'Event Reminder',
-              message: 'You have a meeting at the office.',
+              message: 'Description of the event.',
               date: '2024-02-28',
               time: '10:30 AM',
             ), 
           ],
         ),  
       ), 
+      // QR
       Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -446,10 +577,28 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ],
       ),
-      const Text(
-        'Settings',
-        style: optionStyle,
-      ), 
+      // Settings
+      ListView(
+        children: [
+          ListTile(
+            title: const Text('Notification Settings'),
+            subtitle: const Text('Configure notification preferences'),
+            leading: const Icon(Icons.notifications),
+            onTap: () {
+              // Handle tap for notification settings
+            },
+          ),
+          ListTile(
+            title: const Text('Account Settings'),
+            subtitle: const Text('Manage your account details'),
+            leading: const Icon(Icons.account_circle),
+            onTap: () {
+              // Handle tap for account settings
+            },
+          ),
+          // Add more ListTiles for additional settings
+        ],
+      )
     ];
   }
 

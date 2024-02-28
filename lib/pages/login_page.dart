@@ -121,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
   String invPhoneErr = '';
   String phoneNotFoundErr = '';
   String notApprove = '';
-
+  
   void _cookieSession(String cookie) async {
     int position1 = cookie.indexOf("MANOM=");
     int position2 = cookie.indexOf(";", position1);
@@ -138,9 +138,9 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> sendData() async {
     try {
       final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/login"), body: {
-        'phone_number': phoneNumberController.text,
-        'country_code': countryCode,
-      });
+          'phone_number': phoneNumberController.text,
+          'country_code': countryCode,
+        });
 
       if (res.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(res.body);
@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           );
-          _cookieSession(res.headers["set-cookie"].toString()); 
+          _cookieSession(res.headers["set-cookie"].toString());
         }
       } else {
         print("Request failed with status: ${res.statusCode}");
