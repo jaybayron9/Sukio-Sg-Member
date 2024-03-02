@@ -36,8 +36,8 @@ class _SplashPageState extends State<SplashPage> {
       child: const Center(
         child: Image(
           image: AssetImage('images/splashLogo.png'),
-          width: 700, // specify your desired width
-          height: 700, // specify your desired height
+          width: 300, // specify your desired width
+          height: 300, // specify your desired height
         ),
       ),
     ));

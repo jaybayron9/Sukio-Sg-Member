@@ -14,10 +14,10 @@
       "languageVersion": "2.18"
     },
     {
-      "name": "awesome_notifications",
-      "rootUri": "file:///Users/cal4careit-ph/.pub-cache/hosted/pub.dev/awesome_notifications-0.9.2",
+      "name": "awesome_dialog",
+      "rootUri": "file:///Users/cal4careit-ph/.pub-cache/hosted/pub.dev/awesome_dialog-3.2.0",
       "packageUri": "lib/",
-      "languageVersion": "2.19"
+      "languageVersion": "2.12"
     },
     {
       "name": "boolean_selector",
@@ -120,6 +120,12 @@
       "rootUri": "file:///Users/cal4careit-ph/.pub-cache/hosted/pub.dev/google_fonts-6.1.0",
       "packageUri": "lib/",
       "languageVersion": "2.14"
+    },
+    {
+      "name": "graphs",
+      "rootUri": "file:///Users/cal4careit-ph/.pub-cache/hosted/pub.dev/graphs-2.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
     },
     {
       "name": "http",
@@ -306,6 +312,18 @@
       "rootUri": "file:///Users/cal4careit-ph/.pub-cache/hosted/pub.dev/qrscan-0.3.3",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "rive",
+      "rootUri": "file:///Users/cal4careit-ph/.pub-cache/hosted/pub.dev/rive-0.12.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "rive_common",
+      "rootUri": "file:///Users/cal4careit-ph/.pub-cache/hosted/pub.dev/rive_common-0.2.8",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
     },
     {
       "name": "shared_preferences",
@@ -500,7 +518,7 @@
       "languageVersion": "3.2"
     }
   ],
-  "generated": "2024-02-28T06:32:25.705243Z",
+  "generated": "2024-03-01T07:42:38.191946Z",
   "generator": "pub",
   "generatorVersion": "3.3.0"
 }

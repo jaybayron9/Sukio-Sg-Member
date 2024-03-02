@@ -1,5 +1,4 @@
 # This is a generated file; do not edit or check into version control.
-awesome_notifications=/Users/cal4careit-ph/.pub-cache/hosted/pub.dev/awesome_notifications-0.9.2/
 path_provider=/Users/cal4careit-ph/.pub-cache/hosted/pub.dev/path_provider-2.1.2/
 path_provider_android=/Users/cal4careit-ph/.pub-cache/hosted/pub.dev/path_provider_android-2.2.2/
 path_provider_foundation=/Users/cal4careit-ph/.pub-cache/hosted/pub.dev/path_provider_foundation-2.3.2/
@@ -11,6 +10,7 @@ permission_handler_apple=/Users/cal4careit-ph/.pub-cache/hosted/pub.dev/permissi
 permission_handler_html=/Users/cal4careit-ph/.pub-cache/hosted/pub.dev/permission_handler_html-0.1.1/
 permission_handler_windows=/Users/cal4careit-ph/.pub-cache/hosted/pub.dev/permission_handler_windows-0.2.1/
 qrscan=/Users/cal4careit-ph/.pub-cache/hosted/pub.dev/qrscan-0.3.3/
+rive_common=/Users/cal4careit-ph/.pub-cache/hosted/pub.dev/rive_common-0.2.8/
 shared_preferences=/Users/cal4careit-ph/.pub-cache/hosted/pub.dev/shared_preferences-2.2.2/
 shared_preferences_android=/Users/cal4careit-ph/.pub-cache/hosted/pub.dev/shared_preferences_android-2.2.1/
 shared_preferences_foundation=/Users/cal4careit-ph/.pub-cache/hosted/pub.dev/shared_preferences_foundation-2.3.5/

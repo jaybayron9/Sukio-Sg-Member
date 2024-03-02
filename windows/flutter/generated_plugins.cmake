@@ -3,8 +3,8 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  awesome_notifications
   permission_handler_windows
+  rive_common
   url_launcher_windows
 )
 

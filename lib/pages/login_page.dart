@@ -1,4 +1,5 @@
 // ignore_for_file: library_private_types_in_public_api, avoid_print, use_build_context_synchronously
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart'; 
 import '/pages/dashboard_page.dart'; 
 import '/pages/assets.dart';
@@ -280,6 +281,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blue.shade900,
       body: SafeArea(
         child: Form(
           child: SingleChildScrollView(
@@ -289,37 +291,40 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     Container(
                       // margin: const EdgeInsets.only(bottom: 5),
-                      height: MediaQuery.of(context).size.height * 0.3,
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.orangeAccent, Colors.orangeAccent],
-                          end: Alignment.bottomCenter,
-                          begin: Alignment.topCenter,
-                        ),
-                        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(100)),
+                      height: MediaQuery.of(context).size.height * 0.45,
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade500,
+                        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(100)),
                       ),
                       child: Center(
-                        child: Transform.scale(
-                          scale: 2, // Adjust the scale factor as needed
-                          child: const Image(
-                            image: AssetImage('images/splashLogo.png'),
-                          ),
-                        ),
+                        child: Column(
+                          children: [
+                            Transform.scale(
+                              scale: 0.8, // Adjust the scale factor as needed
+                              child: const Image(
+                                image: AssetImage('images/splashLogo.png'),
+                                height: 300,
+                                width: 300,
+                              ),
+                            ),
+                            Center(
+                              child: Text('Sukyo Mahikari',
+                                style: TextStyle(
+                                  color: Colors.blue.shade800, 
+                                  letterSpacing: .3, 
+                                  fontSize: 40, 
+                                  fontWeight: FontWeight.bold
+                                ), 
+                              ),
+                            ),
+                            const SizedBox(height: 50)
+                          ],
+                        ), 
                       ),
-                    ),
-                    Positioned(
-                      top: 20,
-                      right: 20,
-                      child: IconButton(
-                        onPressed: _qrScanner,
-                        icon: Icon(Icons.qr_code_scanner),
-                        iconSize: 30,
-                        color: Colors.black,
-                      ),
-                    ),
+                    )
                   ],
                 ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.01),
                 Container(
                   alignment: Alignment.centerLeft,
                   margin: const EdgeInsets.only(left: 25, right: 25), // Align the text to the right within its container
@@ -327,7 +332,7 @@ class _LoginPageState extends State<LoginPage> {
                     'Hello,',
                     style: TextStyle(
                       fontSize: 30,
-                      color: Colors.grey,
+                      color: Colors.white70,
                       height: 1.5,
                     ),
                   ),
@@ -335,12 +340,12 @@ class _LoginPageState extends State<LoginPage> {
                 Container(
                   alignment: Alignment.centerLeft,
                   margin: const EdgeInsets.only(left: 20, right: 20), // Align the text to the right within its container
-                  child: const Text(
+                  child: Text(
                     'Welcome!',
                     style: TextStyle(
                       fontSize: 45,
                       fontWeight: FontWeight.bold,
-                      color: Colors.orangeAccent,
+                      color: Colors.amber.shade500,
                       height: 1.5,
                     ),
                   ),
@@ -349,11 +354,11 @@ class _LoginPageState extends State<LoginPage> {
                 Container(
                   alignment: Alignment.centerLeft,
                   margin: const EdgeInsets.only(left: 25, right: 25), // Align the text to the right within its container
-                  child: Text(
+                  child: const Text(
                     'Check-in,',
                     style: TextStyle(
                       fontSize: 20,
-                      color: Colors.grey.shade600,
+                      color: Colors.white70,
                       height: 1.5,
                     ),
                   ),
@@ -361,11 +366,11 @@ class _LoginPageState extends State<LoginPage> {
                 Container(
                   alignment: Alignment.centerLeft,
                   margin: const EdgeInsets.only(left: 25, right: 25), // Align the text to the right within its container
-                  child: Text(
+                  child: const Text(
                     'Enter your register phone number to access your account.',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey.shade600,
+                      color: Colors.white70,
                       height: 1.5,
                     ),
                   ),
@@ -432,17 +437,17 @@ class _LoginPageState extends State<LoginPage> {
                             sendData();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orangeAccent,
+                            backgroundColor: Colors.amber.shade500,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(100),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             "Submit",
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Colors.blue.shade900,
                             ),
                           ),
                         ),
@@ -459,15 +464,15 @@ class _LoginPageState extends State<LoginPage> {
                         child: Container(
                           margin: const EdgeInsets.only(top: 10),
                           child: RichText(
-                            text: const TextSpan(
+                            text: TextSpan(
                               children: [
-                                TextSpan(
+                                const TextSpan(
                                   text: "Not yet a Member? ",
-                                  style: TextStyle(color: Colors.black),
+                                  style: TextStyle(color: Colors.white70),
                                 ),
                                 TextSpan(
                                   text: "Register",
-                                  style: TextStyle(color: Colors.orangeAccent),
+                                  style: TextStyle(color: Colors.amber.shade500),
                                 ),
                               ],
                             ),

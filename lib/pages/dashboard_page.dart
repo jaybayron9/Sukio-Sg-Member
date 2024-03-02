@@ -1,4 +1,5 @@
 // import 'package:flutter/gestures.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,16 +39,19 @@ class DashboardPage extends StatefulWidget {
   State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> { 
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+class _DashboardPageState extends State<DashboardPage> {
+  final CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
   List<GroupEvent> events = []; 
   List<GroupEvent> filteredEvents = [];
+  String dateIn = '';
+  String timeIn = '';
+  bool isCheckIn = false;
+  bool isGratedRequest = false;
 
   String? scannedQRData;
   int _selectedIndex = 0;
-  static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
   Future<List<Map<String, dynamic>>> fetchData() async {
     final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/memberLogs"), body: {
@@ -57,7 +61,11 @@ class _DashboardPageState extends State<DashboardPage> {
     if (response.statusCode == 200) {
       final List<dynamic> jsonResponse = json.decode(response.body);
 
-      return jsonResponse.map((e) => {'id': e['id'].toString(), 'check_in': e['check_in'], 'check_out': e['check_out'], 'date': e['date']}).toList();
+      return jsonResponse.map((e) => {
+        'id': e['id'].toString(), 
+        'check_in': e['check_in'], 
+        'check_out': e['check_out'], 
+        'date': e['date']}).toList();
     } else {
       throw Exception('Failed to load data');
     }
@@ -92,13 +100,26 @@ class _DashboardPageState extends State<DashboardPage> {
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).pop();
+                      if (responseData['type'] == 'in') {
+                        setState(() {
+                          isCheckIn = true;
+                        });
+                        _onItemTapped(5);
+                      } else if (responseData['type'] == 'out') {
+                        setState(() {
+                          isCheckIn = false;
+                        });
+                        _onItemTapped(0);
+                      }
+                      
+                      getDateCheckIn();
                     },
                     child: const Text('OK'),
                   ),
                 ],
               );
             },
-          );
+          ); 
         }
       }
     } else {
@@ -114,7 +135,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
           if (res.statusCode == 200) {
             final Map<String, dynamic> responseData = json.decode(res.body);
-
+            
             await showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -130,6 +151,13 @@ class _DashboardPageState extends State<DashboardPage> {
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
+                        if (responseData['type'] == 'in') {
+                          _onItemTapped(5);
+                        } else if (responseData['type'] == 'out') {
+                          _onItemTapped(0);
+                        }
+                        
+                        getDateCheckIn();
                       },
                       child: const Text('OK'),
                     ),
@@ -192,9 +220,86 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   } 
 
+  getDateCheckIn() async {
+    final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/getCheckInDateTime"), body: {
+      'member_id': widget.memberId,
+    });
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseData = json.decode(response.body);
+
+      setState(() {
+        dateIn = responseData['date'].toString();
+        timeIn = responseData['check_in'].toString();
+      });
+
+      print(responseData);
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
+  requestCheckOut() async {
+    final response = await http.post(
+      Uri.parse('https://ww2.selfiesmile.app/attendance/requestOut'),
+      body: {'member_id': widget.memberId},
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseData = json.decode(response.body); 
+      print(responseData);
+
+      if (responseData['status'].toString() == 'true') {
+        _onItemTapped(0);
+      }
+    }
+  }
+
+  haveRequestCheckOut() async {
+    final response = await http.post(
+      Uri.parse('https://ww2.selfiesmile.app/members/canCheckOutRequest'),
+      body: {'member_id': widget.memberId}
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      print(responseData);
+      if (responseData['status'].toString() == 'true') {
+        setState(() {
+          isGratedRequest = responseData['check_out_request'].toString() == '1' ? true : false; 
+        });
+      }
+    }
+  }
+
+  isNotCheckOut() async {
+    final response = await http.post(
+      Uri.parse('https://ww2.selfiesmile.app/members/isNotCheckOut'),
+      body: {'member_id': widget.memberId}
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseData = json.decode(response.body);
+
+      if (responseData['status'].toString() == 'true') {
+        _onItemTapped(5);
+        setState(() {
+          isCheckIn = true;
+          dateIn = responseData['date'].toString();
+          timeIn = responseData['in'].toString();
+        });
+      } else {
+        _onItemTapped(0);
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState(); 
+
+    isNotCheckOut();
+    haveRequestCheckOut();
 
     getFromLocalStorage().then((storedValue) {
       if (storedValue != null) { 
@@ -219,23 +324,37 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  @override
+  @override 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue.shade900,
         iconTheme: const IconThemeData(
-          color: Colors.white, // Change the color to your desired color
+          color: Colors.white
         ),
+        actions: [
+          Container(
+            height: 10,
+            width: 10,
+            margin: const EdgeInsets.only(right: 20),
+            decoration: BoxDecoration(
+              color: isCheckIn ?  Colors.green : Colors.white70,
+              borderRadius: const BorderRadius.all(
+                Radius.circular(20.0),
+              ),
+            ),
+          ),
+        ], 
       ),
       body: _widgetOptions[_selectedIndex],
+      // body: _widgetOptions[5],
       drawer: Drawer( 
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Colors.orangeAccent,
+              decoration: BoxDecoration(
+                color: Colors.blue.shade900,
               ),
               child: Column(
                 children: [
@@ -270,8 +389,8 @@ class _DashboardPageState extends State<DashboardPage> {
             ListTile(
               title: const Text('Home'),
               selected: _selectedIndex == 0,
-              onTap: () {
-                _onItemTapped(0);
+              onTap: () { 
+                isNotCheckOut();
                 Navigator.pop(context);
               },
             ),
@@ -318,21 +437,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 );
               },
-            ), 
-            ListTile(
-              title: const Text('Show Check In Page'),
-              onTap: () { 
-                _onItemTapped(4);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('Show choices checkout'),
-              onTap: () { 
-                _onItemTapped(4);
-                Navigator.pop(context);
-              },
-            ), 
+            ),  
           ],
         ),
       ),
@@ -346,14 +451,9 @@ class _DashboardPageState extends State<DashboardPage> {
         color: Colors.blue.shade900,
         child: Column(
           children: [
-            Expanded(
-              child: Container(
-                height: double.infinity,
-                color: Colors.blue.shade900,
+            Expanded( 
                 child: Center(
-                  child: Container(
-                    height: 50,
-                    width: 200,
+                  child: Container( 
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(25),
                       color: Colors.white, 
@@ -365,45 +465,63 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ],
                     ),
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                        foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
-                        overlayColor: MaterialStateProperty.resolveWith<Color>(
-                          (Set<MaterialState> states) {
-                            if (states.contains(MaterialState.pressed)) {
-                              return const Color(0xFFDDDDDD);
-                            }
-                            return const Color(0xFFDDDDDD); 
-                          },
-                        ),
-                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            side: const BorderSide(color: Color(0xFF222222)),
+                    child: SizedBox( 
+                      width: 300,
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.amber),
+                          foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
+                          overlayColor: MaterialStateProperty.resolveWith<Color>(
+                            (Set<MaterialState> states) {
+                              if (states.contains(MaterialState.pressed)) {
+                                return const Color(0xFFDDDDDD);
+                              }
+                              return const Color(0xFFDDDDDD); 
+                            },
+                          ),
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: const BorderSide(color: Colors.blue),
+                            ),
+                          ),
+                          padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.all(13)),
+                          textStyle: MaterialStateProperty.all<TextStyle>(
+                            const TextStyle(
+                              fontFamily: 'Circular',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF222222),
+                            ),
                           ),
                         ),
-                        padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.all(13)),
-                        textStyle: MaterialStateProperty.all<TextStyle>(
-                          const TextStyle(
-                            fontFamily: 'Circular',
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF222222),
-                          ),
+                        onPressed: _qrScanner,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.qr_code_scanner_outlined,
+                              color: Colors.blue.shade800,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'CHECK IN',
+                              style: TextStyle(
+                                fontFamily: 'Circular',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.blue.shade800,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      onPressed: _qrScanner,
-                      child: const Text('Check In'),
                     ),
                   ),
                 ),
-              ),
-            ), 
+              ), 
             Expanded(
-              child: Container (
-                padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                height: double.infinity, 
+              child: Container ( 
                 decoration: const BoxDecoration(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(30.0)),
                   color: Colors.white,
@@ -415,37 +533,41 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   ],
                 ), 
-                child: FutureBuilder<List<Map<String, dynamic>>>(
-                  future: fetchData(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    return DataTable(
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(30.0)), 
-                      ),
-                      columns: const [ 
-                        DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('IN', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('OUT', style: TextStyle(fontWeight: FontWeight.bold))),
-                        DataColumn(label: Text('DATE', style: TextStyle(fontWeight: FontWeight.bold))),
-                      ],
-                      rows: snapshot.data!.asMap().entries.map<DataRow>((entry) { 
-                        final record = entry.value;
-
-                        return DataRow(
-                          cells: [
-                            DataCell(Text(record['id'].toString() == '0' ? '---' : record['id'])),
-                            DataCell(Text(record['check_in'].toString() == 'null' ? '---' : record['check_in'])),
-                            DataCell(Text(record['check_out'].toString() == 'null' ? '---' : record['check_out'])),
-                            DataCell(Text(record['date'].toString() == 'null' ? '---' : record['date']))
-                          ], 
-                        );
-                      }).toList(),
-                    );
-                  }, 
+                width: double.infinity,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: FutureBuilder<List<Map<String, dynamic>>>(
+                    future: fetchData(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                  
+                      return DataTable(
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(30.0)), 
+                        ),
+                        columns: const [ 
+                          DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold))),
+                          DataColumn(label: Text('IN', style: TextStyle(fontWeight: FontWeight.bold))),
+                          DataColumn(label: Text('OUT', style: TextStyle(fontWeight: FontWeight.bold))),
+                          DataColumn(label: Text('DATE', style: TextStyle(fontWeight: FontWeight.bold))),
+                        ],
+                        rows: snapshot.data!.asMap().entries.map<DataRow>((entry) {
+                          final record = entry.value;
+                  
+                          return DataRow(
+                            cells: [
+                              DataCell(Text(record['id'].toString() == '0' ? '---' : record['id'])),
+                              DataCell(Text(record['check_in'].toString() == 'null' ? '---' : record['check_in'])),
+                              DataCell(Text(record['check_out'].toString() == 'null' ? '---' : record['check_out'])),
+                              DataCell(Text(record['date'].toString() == 'null' ? '---' : record['date']))
+                            ], 
+                          );
+                        }).toList(),
+                      );
+                    }, 
+                  ),
                 ),
               ), 
             )
@@ -519,7 +641,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ],
       ),
-      // Notifications
+      // // Notifications
       SingleChildScrollView(
         child: Column( 
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -551,7 +673,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),  
       ), 
-      // QR
+      // // QR
       Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -598,7 +720,215 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           // Add more ListTiles for additional settings
         ],
-      )
+      ),
+      // Checked In Page
+      Container(
+        color: Colors.blue.shade900,
+        child:  Column(
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'CHECKED IN',
+                    style: TextStyle(
+                      fontSize: 50,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber.shade500
+                    ),
+                  ), 
+                  const SizedBox(height: 20), 
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [ 
+                      const Center(
+                        child: Text(
+                          'Date: ',
+                          style: TextStyle(color: Colors.white),
+                        )
+                      ),
+                      Center(
+                        child: Text(dateIn,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        )
+                      ),
+                      const SizedBox(width: 20), 
+                      const Text(
+                        'Time: ',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Center(
+                        child: Text(
+                          timeIn,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        )
+                      ) 
+                    ],
+                  ) 
+                ],
+              ) 
+            ),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(30.0)),
+                  color: Colors.white,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'CHECK OUT',
+                      style: TextStyle(
+                        fontSize: 50,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 65, 95, 204) 
+                      ),
+                    ),
+                    const SizedBox(height: 20,),
+                    SizedBox(
+                      width: 300,
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.amber.shade500),
+                          foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
+                          overlayColor: MaterialStateProperty.resolveWith<Color>(
+                            (Set<MaterialState> states) {
+                              if (states.contains(MaterialState.pressed)) {
+                                return const Color(0xFFDDDDDD);
+                              }
+                              return const Color(0xFFDDDDDD); 
+                            },
+                          ),
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(color: Colors.blue.shade900),
+                            ),
+                          ),
+                          padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.all(13)),
+                          textStyle: MaterialStateProperty.all<TextStyle>(
+                            TextStyle(
+                              fontFamily: 'Circular',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue.shade900,
+                            ),
+                          ),
+                        ),
+                        onPressed: _qrScanner,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.qr_code_scanner,
+                              color: Colors.blue.shade900,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Scan',
+                              style: TextStyle(
+                                fontFamily: 'Circular',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.blue.shade900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Visibility(
+                      visible: isGratedRequest,
+                      child: Container(
+                        width: 300,
+                        child: ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(Colors.amber.shade500),
+                            foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
+                            overlayColor: MaterialStateProperty.resolveWith<Color>(
+                              (Set<MaterialState> states) {
+                                if (states.contains(MaterialState.pressed)) {
+                                  return const Color(0xFFDDDDDD);
+                                }
+                                return const Color(0xFFDDDDDD); 
+                              },
+                            ),
+                            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide(color: Colors.blue.shade900),
+                              ),
+                            ),
+                            padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.all(13)),
+                            textStyle: MaterialStateProperty.all<TextStyle>(
+                              const TextStyle(
+                                fontFamily: 'Circular',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF222222),
+                              ),
+                            ),
+                          ),
+                          onPressed: () { 
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Request Confirmation'),
+                                  content: const Text('Thank you for visiting. Please allow us a moment to confirm your request.'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () {  
+                                        requestCheckOut();  
+                                        print('test');
+                                        Navigator.of(context).pop(); 
+                                      },
+                                      child: const Text('Confirm'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () { 
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Cancel'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.confirmation_num_outlined,
+                                color: Colors.blue.shade900,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Request',
+                                style: TextStyle(
+                                  fontFamily: 'Circular',
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.blue.shade900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ), 
+                  ],
+                ),
+              ),
+            ), 
+          ],
+        ),
+      ), 
     ];
   }
 

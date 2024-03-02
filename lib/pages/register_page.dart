@@ -118,10 +118,23 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             Container(
               margin: const EdgeInsets.only(bottom: 20, left: 22),
-              child: Text(
-                error1,
-                style: const TextStyle(color: Colors.red),
-              ),
+              child: Stack(
+              children: [
+                Text(
+                  error1,
+                  style: TextStyle(
+                    foreground: Paint()
+                      ..style = PaintingStyle.stroke
+                      ..strokeWidth = 3
+                      ..color = Colors.white, 
+                  ),
+                ),
+                Text(
+                  error1,
+                  style: TextStyle(foreground: Paint()..color = Colors.red),
+                ), 
+              ],
+            ),
             )
           ],
         ),
@@ -174,6 +187,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blue.shade900,
       body: SafeArea(
         child: Form(
           child: SingleChildScrollView(
@@ -182,19 +196,17 @@ class _RegisterPageState extends State<RegisterPage> {
                 Container(
                   // margin: const EdgeInsets.only(bottom: 5),
                   height: MediaQuery.of(context).size.height * 0.3,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.orangeAccent, Colors.orangeAccent],
-                      end: Alignment.bottomCenter,
-                      begin: Alignment.topCenter,
-                    ),
-                    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(100)),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade500,
+                    borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(100)),
                   ),
                   child: Center(
                     child: Transform.scale(
-                      scale: 2, // Adjust the scale factor as needed
+                      scale: .8, // Adjust the scale factor as needed
                       child: const Image(
                         image: AssetImage('images/splashLogo.png'),
+                        height: 300,
+                        width: 300,
                       ),
                     ),
                   ),
@@ -203,11 +215,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 Container(
                   alignment: Alignment.centerLeft,
                   margin: const EdgeInsets.only(left: 25, right: 25), // Align the text to the right within its container
-                  child: Text(
+                  child: const Text(
                     'Register,',
                     style: TextStyle(
                       fontSize: 20,
-                      color: Colors.grey.shade600,
+                      color: Colors.white70,
                       height: 1.5,
                     ),
                   ),
@@ -215,11 +227,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 Container(
                   alignment: Alignment.centerLeft,
                   margin: const EdgeInsets.only(left: 25, right: 25), // Align the text to the right within its container
-                  child: Text(
+                  child: const Text(
                     'Enter your details to create an account.',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey.shade600,
+                      color: Colors.white70,
                       height: 1.5,
                     ),
                   ),
@@ -400,14 +412,14 @@ class _RegisterPageState extends State<RegisterPage> {
                       sendData();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orangeAccent,
+                      backgroundColor: Colors.amber.shade500,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       "Register",
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
                     ),
                   ),
                 ),
@@ -425,14 +437,14 @@ class _RegisterPageState extends State<RegisterPage> {
                       );
                     },
                     child: RichText(
-                      text: const TextSpan(children: [
-                        TextSpan(
+                      text: TextSpan(children: [
+                        const TextSpan(
                           text: "Already a member ? ",
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(color: Colors.white70),
                         ),
                         TextSpan(
                           text: "Log-in",
-                          style: TextStyle(color: Colors.orangeAccent),
+                          style: TextStyle(color: Colors.amber.shade500),
                         ),
                       ]),
                     ),

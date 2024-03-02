@@ -209,18 +209,11 @@ class _VerificationState extends State<Verification> {
                     shape: BoxShape.circle,
                     color: Colors.grey.shade200,
                   ),
-                  child: FittedBox(
+                  child: const FittedBox(
                     fit: BoxFit.contain,
-                    child: Transform.rotate(
-                      angle: 38,
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.4,
-                        height: MediaQuery.of(context).size.width * 0.4,
-                        child: Lottie.network(
-                          'https://lottie.host/4f09a893-a40c-4f46-bc25-15c3e7f71d55/Lhr2Wq0MGX.json',
-                        ),
-                      ),
-                    ),
+                    child: Icon(
+                      Icons.sms_rounded
+                    )
                   ),
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.05),
@@ -286,7 +279,7 @@ class _VerificationState extends State<Verification> {
                       onPressed: () {
                         verifyPhone();
                       },
-                      color: Colors.orangeAccent,
+                      color: Colors.amber.shade500,
                       minWidth: double.infinity,
                       height: MediaQuery.of(context).size.height * 0.05,
                       shape: RoundedRectangleBorder(
@@ -308,12 +301,12 @@ class _VerificationState extends State<Verification> {
                                   color: Colors.white,
                                   size: 30,
                                 )
-                              : const Text(
+                              : Text(
                                   "Verify",
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: Colors.blue.shade900,
                                   ),
                                 ),
                     ),
@@ -334,10 +327,10 @@ class _VerificationState extends State<Verification> {
                     Navigator.pop(context);
                   },
                   child: RichText(
-                    text: const TextSpan(children: [
+                    text: TextSpan(children: [
                       TextSpan(
                         text: "Back to Home",
-                        style: TextStyle(color: Colors.orangeAccent),
+                        style: TextStyle(color: Colors.blue.shade900),
                       ),
                     ]),
                   ),
