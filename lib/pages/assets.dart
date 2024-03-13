@@ -10,4 +10,4 @@ Future<bool> storeSession(Map value) async {
   final localStorage = await SharedPreferences.getInstance();
   String encoded = json.encode(value);
   return localStorage.setString('session', encoded);
-}
+} 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-Color orangeColors = Color(0xffffb84d);
-Color orangeLightColors = Color(0xffF2861E); 
-Color brownColors = Color(0xffc97954); 
-Color whiteColors = Color(0xffffffff);
-Color lightColors = Color(0xffefebeb);
+Color orangeColors = const Color(0xffffb84d);
+Color orangeLightColors = const Color(0xffF2861E);
+Color brownColors = const Color(0xffc97954);
+Color whiteColors = const Color(0xffffffff);
+Color lightColors = const Color(0xffefebeb);
