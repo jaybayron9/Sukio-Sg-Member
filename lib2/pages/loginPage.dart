@@ -18,7 +18,7 @@ class LoginPage extends StatefulWidget {
   LoginPageState createState() => LoginPageState();
 }
 
-class LoginPageState extends State<LoginPage> {  
+class LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> loginForm = GlobalKey<FormState>();
   final TextEditingController phoneNumberController = TextEditingController();
   Country country = CountryParser.parseCountryCode('SG'); 
@@ -67,7 +67,7 @@ class LoginPageState extends State<LoginPage> {
         );
       } else { 
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.remove('member_id'); 
+        prefs.remove('authId'); 
       }
     }
   }
@@ -139,7 +139,7 @@ class LoginPageState extends State<LoginPage> {
                       ),
                       SizedBox(height: MediaQuery.of(context).size.height * 0.05), 
                       const Text(
-                        'Enter your register phone number to access your account.',
+                        'Enter your registered phone number to access your account.',
                         style: TextStyle(fontSize: 14, color: Colors.white70, height: 1.5),
                       ),
                       SizedBox(height: MediaQuery.of(context).size.height * 0.01), 
@@ -175,15 +175,19 @@ class LoginPageState extends State<LoginPage> {
                                 },
                               );
                             },
-                            child: Container(
-                              height: 45,
-                              width: 70,
-                              alignment: Alignment.center,
-                              child: Text(
-                                '${country.flagEmoji} +${country.phoneCode}',
-                                style: const TextStyle(fontSize: 18, color: Colors.black, fontWeight: FontWeight.bold),
+                            child:Container(
+                              padding: const EdgeInsets.only(left: 10, right: 15),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '${country.flagEmoji} +${country.phoneCode}',
+                                    style: const TextStyle(fontSize: 18, color: Colors.black, fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.start,
+                                  ),
+                                ],
                               ),
-                            ),
+                            )
                           ), 
                           errorStyle: TextStyle(color: Colors.red.shade200), 
                         ), 

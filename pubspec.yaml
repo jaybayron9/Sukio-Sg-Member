@@ -52,6 +52,7 @@ dependencies:
   get: ^4.6.6 
   geolocator: ^11.0.0
   geocoding: ^2.2.0   
+  pusher_channels_flutter: ^2.2.1
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +81,9 @@ flutter:
     - images/splashLogo.png
     - images/email.png
     - images/person.png
+    - images/sukioMahikari.png
+    - images/logoitfs.png
+    - images/cal4care.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

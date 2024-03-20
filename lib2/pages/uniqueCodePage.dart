@@ -160,7 +160,7 @@ class UniqueCodeState extends State<UniqueCode> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Don't receive the OTP",
+                        "Didn't receive the OTP?",
                         style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
                       ),
                       TextButton(
@@ -203,7 +203,7 @@ class UniqueCodeState extends State<UniqueCode> {
                                 });
                               } else {
                                 SharedPreferences prefs = await SharedPreferences.getInstance();
-                                prefs.setString('authId', res['member_id']); 
+                                await prefs.setString('authId', res['member_id']); 
 
                                 Navigator.pushReplacement(context,
                                   MaterialPageRoute(

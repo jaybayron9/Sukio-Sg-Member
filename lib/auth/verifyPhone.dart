@@ -1,19 +1,22 @@
-import 'dart:convert';
 import 'dart:async';
-import 'package:awesome_dialog/awesome_dialog.dart'; 
-import '/pages/loginPage.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_verification_code/flutter_verification_code.dart';
 
-class Verification extends StatefulWidget {
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_verification_code/flutter_verification_code.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:sukio_member/auth/login.dart';
+
+class VerifyPhone extends StatefulWidget {
   final String firstName;
   final String lastName;
   final String phoneNumber;
   final String email;
   final String countryCode;
 
-  const Verification({
+  const VerifyPhone({
     Key? key,
     required this.firstName,
     required this.lastName,
@@ -23,10 +26,10 @@ class Verification extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  VerificationState createState() => VerificationState();
+  _VerifyPhoneState createState() => _VerifyPhoneState();
 }
 
-class VerificationState extends State<Verification> {
+class _VerifyPhoneState extends State<VerifyPhone> {
   late Timer _timer;
   final bool _isVerified = false;
   final bool _isLoading = false;
@@ -91,7 +94,8 @@ class VerificationState extends State<Verification> {
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                 Text(
-                  'Please enter the 4-digit code sent to \n +${widget.countryCode}${widget.phoneNumber}',
+                  '',
+                  // 'Please enter the 4-digit code sent to \n +${widget.countryCode}${widget.phoneNumber}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -124,7 +128,7 @@ class VerificationState extends State<Verification> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Don't receive the OTP",
+                      "Didn't receive the OTP?",
                       style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
                     ),
                     TextButton(
@@ -169,47 +173,63 @@ class VerificationState extends State<Verification> {
                     MaterialButton(
                       disabledColor: Colors.grey.shade300,
                       onPressed: () async {
-                        setState(() { noError = true; });
-                        try {
-                          final response = await http.post(
-                            Uri.parse("https://ww2.selfiesmile.app/members/verifyPhone"),
-                            body: {
-                              'first_name': widget.firstName,
-                              'last_name': widget.lastName,
-                              'email': widget.email,
-                              'country_code': widget.countryCode,
-                              'phone_number': widget.phoneNumber,
-                              'phone_code': _code,
-                            }
-                          );
-
-                          if (response.statusCode == 200) {
-                            final Map<String, dynamic> res = json.decode(response.body);
-                            print(res);
-                            if (res['status'].toString() == 'true') { 
-                              AwesomeDialog(
-                                context: context,
-                                dialogType: DialogType.success,
-                                animType: AnimType.rightSlide,
-                                dismissOnTouchOutside: false,
-                                title: 'Successfully Registered',
-                                desc: res['message'], 
-                                btnOkOnPress: () { 
-                                  Navigator.push(context,
-                                    MaterialPageRoute(builder: (context) => const LoginPage()),
-                                  );
-                                },
-                              ).show();   
-                            } else {
-                              setState(() {
-                                invalidCode = res['invalid_code'].toString();
-                              }); 
-                            }
-                            setState(() { noError = false; });
+                        setState(() { noError = true; });    
+                        final response = await http.post(
+                          Uri.parse("https://ww2.selfiesmile.app/members/verifyPhone"),
+                          body: {
+                            'first_name': widget.firstName,
+                            'last_name': widget.lastName,
+                            'email': widget.email,
+                            'country_code': widget.countryCode,
+                            'phone_number': widget.phoneNumber,
+                            'phone_code': _code,
                           }
-                        } catch (e) {
-                          debugPrint("Error: $e");
-                        }
+                        );
+
+                        if (response.statusCode == 200) {
+                          final Map<String, dynamic> res = json.decode(response.body); 
+                          if (res['status'].toString() == 'true') {  
+                            AwesomeDialog(
+                              context: context,
+                              dialogType: DialogType.success,
+                              animType: AnimType.rightSlide,
+                              dismissOnTouchOutside: false,
+                              title: 'Successfully Registered',
+                              desc: res['message'], 
+                              btnOkOnPress: () async { 
+                                OneSignal.Debug.setLogLevel(OSLogLevel.verbose); 
+                                OneSignal.Debug.setAlertLevel(OSLogLevel.none);
+                                OneSignal.consentRequired(false); 
+                                OneSignal.initialize('df33667d-80b5-4062-9ccb-2325537fa02e');  
+                                OneSignal.Notifications.clearAll(); 
+                                OneSignal.User.pushSubscription.addObserver((state) async { 
+                                  await http.post(Uri.parse('https://ww2.selfiesmile.app/members/allowNotification'), body: { 
+                                    'country_code': widget.countryCode,
+                                    'phone_number': widget.phoneNumber,
+                                    'subscription_id': OneSignal.User.pushSubscription.id.toString()
+                                  }); 
+                                });  
+                                OneSignal.Notifications.addPermissionObserver((state) async { 
+                                  await http.post(Uri.parse('https://ww2.selfiesmile.app/members/allowNotification'), body: { 
+                                    'country_code': widget.countryCode,
+                                    'phone_number': widget.phoneNumber,
+                                    'subscription_id': OneSignal.User.pushSubscription.id.toString()
+                                  }); 
+                                }); 
+                                await OneSignal.Notifications.requestPermission(true); 
+
+                                Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) => const Login()),
+                                );
+                              },
+                            ).show();   
+                          } else {
+                            setState(() {
+                              invalidCode = res['invalid_code'].toString();
+                            }); 
+                          }
+                          setState(() { noError = false; });
+                        } 
                       },
                       color: Colors.amber.shade500,
                       minWidth: double.infinity,
