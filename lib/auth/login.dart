@@ -2,8 +2,7 @@ import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-
+import 'dart:convert'; 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sukio_member/auth/loginOTP.dart';
 import 'package:sukio_member/auth/register.dart';
@@ -22,52 +21,7 @@ class _LoginState extends State<Login> {
   String emptyPhonErr = ''; 
   String phoneNotFoundErr = '';
   String notApprove = '';
-  bool noError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    getFromLocalStorage().then((storedValue) {
-      if (storedValue != null) {
-        auth(storedValue.toString());
-      }
-    });
-  } 
-
-  Future<String?> getFromLocalStorage() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('authId');
-  }
-
-  Future<void> auth(memberId) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/auth"), body: {'member_id': memberId});
-    if (res.statusCode == 200) {
-      final Map<String, dynamic> responseData = json.decode(res.body);
-      print(responseData);
-      if (responseData['status'].toString() == 'true') { 
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => DashboardPage(
-        //       memberId: responseData['member_id'],
-        //       membershipId: responseData['membership_id'],
-        //       firstName: responseData['first_name'],
-        //       lastName: responseData['last_name'],
-        //       email: responseData['email'],
-        //       countryCode: responseData['country_code'],
-        //       phoneNumber: responseData['phone_number'],
-        //       role: responseData['role'],
-        //       qrCode: responseData['qr'],
-        //       group: responseData['group'],
-        //     ),
-        //   ),
-        // );
-      } else {  
-        prefs.remove('authId'); 
-      }
-    }
-  }
+  bool noError = false; 
 
   @override
   Widget build(BuildContext context) {

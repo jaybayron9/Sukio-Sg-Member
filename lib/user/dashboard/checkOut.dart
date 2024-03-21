@@ -1,74 +1,75 @@
-// ignore_for_file: use_build_context_synchronously, unused_field
+// ignore_for_file: avoid_print, use_build_context_synchronously, unused_field
 
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:flutter/material.dart'; 
-import 'package:http/http.dart' as http; 
+import 'package:flutter/material.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:qr_bar_code_scanner_dialog/qr_bar_code_scanner_dialog.dart';
-import 'dart:convert';
-
+import 'dart:convert';  
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sukio_member/auth/login.dart';
-import 'package:url_launcher/url_launcher.dart';  
+import 'package:url_launcher/url_launcher.dart';
 
-class CheckIn extends StatefulWidget {
-  const CheckIn({ Key? key }) : super(key: key);
+class CheckOut extends StatefulWidget {
+  const CheckOut({ Key? key }) : super(key: key);
 
   @override
-  _CheckInState createState() => _CheckInState();
+  _CheckOutState createState() => _CheckOutState();
 }
 
-class _CheckInState extends State<CheckIn> { 
-  bool isClick = false;
-  bool isCheckIn = false;
+class _CheckOutState extends State<CheckOut> {
+  List<Map<String, dynamic>> memberLogsData = [];
+  bool hasCheckOut = false;
+  bool isClick = false; 
+  bool isCheckIn = false; 
   String dateIn = '';
   String timeIn = '';
-  String _debugLabelString = '';
-  List<Map<String, dynamic>> memberLogsData = [];
+  String _debugLabelString = ''; 
 
   @override
-  void initState() {
-    super.initState(); 
-    isNotCheckOut(); 
-  }  
+  void initState() {   
+    getDateCheckIn(); 
+    userSettings(); 
+    super.initState();   
+  } 
 
-  isNotCheckOut() async {
+  userSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/members/isNotCheckOut'), body: {
-      'member_id': prefs.getString('authId').toString()
-    });
-
+    final response = await http.post(
+      Uri.parse('https://ww2.selfiesmile.app/settings/userSettings'),
+      body: {'member_id': prefs.getString('authId').toString()}
+    ); 
     if (response.statusCode == 200) {
-      final Map<String, dynamic> responseData = json.decode(response.body);
-
+      final Map<String, dynamic> responseData = json.decode(response.body);  
       if (responseData['status'].toString() == 'true') { 
-        Navigator.pushNamed(context, '/checkOut');  
-      } else {
-        setState(() { isCheckIn = true; });
+        setState(() {
+          hasCheckOut = responseData['check_out_request'].toString() == '1' ? true : false;  
+        });
       }
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/memberLogs"), body: {
-      'member_id': prefs.getString('authId').toString(),
+  Future<void> refreshAttendance() async { 
+    SharedPreferences prefs = await SharedPreferences.getInstance(); 
+    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/members/checkAttStat'), body: {
+      'member_id': prefs.getString('authId').toString()
     });
-
     if (response.statusCode == 200) {
-      final List<dynamic> jsonResponse = json.decode(response.body);
-
-      return jsonResponse.map((e) => {
-        'id': e['id'].toString(), 
-        'check_in': e['check_in'], 
-        'check_out': e['check_out'], 
-        'date': e['date']
-      }).toList();
-    } else {
-      throw Exception('Failed to load data');
+      final Map<String, dynamic> res = json.decode(response.body); 
+      setState(() { 
+        if (res['status'].toString() == 'false') { 
+          isCheckIn = false;
+        } else {
+          isCheckIn = true;
+        }
+      });
     }
-  }  
+
+    List<Map<String, dynamic>> newData = await fetchData();  
+    setState(() { memberLogsData = newData; }); 
+  }
 
   Future<void> _qrScanner() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -99,7 +100,7 @@ class _CheckInState extends State<CheckIn> {
                   if (responseData['type'] == 'in') {
                     setState(() {
                       isCheckIn = true;
-                    });  
+                    }); 
                     Navigator.pushNamed(context, '/checkOut'); 
                   } else if (responseData['type'] == 'out') {
                     setState(() {
@@ -159,7 +160,7 @@ class _CheckInState extends State<CheckIn> {
                       setState(() {
                         isCheckIn = false;
                       });
-                      Navigator.pushNamed(context, '/checkIn'); 
+                      Navigator.pushNamed(context, '/checkIn');  
                     }
                     getDateCheckIn();
                   },
@@ -181,29 +182,22 @@ class _CheckInState extends State<CheckIn> {
     }
   }
 
-  Future<void> refreshAttendance() async { 
-    SharedPreferences prefs = await SharedPreferences.getInstance(); 
-    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/members/checkAttStat'), body: {
-      'member_id': prefs.getString('authId').toString()
-    });
+  requestCheckOut() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final response = await http.post(
+      Uri.parse('https://ww2.selfiesmile.app/attendance/requestOut'),
+      body: {'member_id': prefs.getString('authId').toString()},
+    ); 
     if (response.statusCode == 200) {
       final Map<String, dynamic> res = json.decode(response.body); 
-      setState(() {
-        isNotCheckOut();
-        if (res['status'].toString() == 'false') { 
-          isCheckIn = false;
-        } else {
-          isCheckIn = true;
-        }
-      });
+      if (res['status'].toString() == 'true') { 
+        Navigator.pushNamed(context, '/checkIn'); 
+      }
     }
-
-    List<Map<String, dynamic>> newData = await fetchData();  
-    setState(() { memberLogsData = newData; }); 
   }
 
   triggerMasterCheckIn() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance(); 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     await http.post(Uri.parse("https://ww2.selfiesmile.app/attendance/triggerCheckIn"), body: {
       "name": '${prefs.getString('firstName').toString()} ${prefs.getString('lastName').toString()}',
     });
@@ -220,6 +214,24 @@ class _CheckInState extends State<CheckIn> {
         dateIn = responseData['date'].toString();
         timeIn = responseData['check_in'].toString();
       }); 
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/memberLogs"), body: {
+      'member_id': prefs.getString('authId').toString(),
+    }); 
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonResponse = json.decode(response.body); 
+      return jsonResponse.map((e) => {
+        'id': e['id'].toString(), 
+        'check_in': e['check_in'], 
+        'check_out': e['check_out'], 
+        'date': e['date']
+      }).toList();
     } else {
       throw Exception('Failed to load data');
     }
@@ -254,23 +266,96 @@ class _CheckInState extends State<CheckIn> {
           child: Column(
             children: [
               Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 10),
-                      const Image(
-                        image: AssetImage('images/sukioMahikari.png'),
-                        height: 130,
-                        width: 130,
-                        fit: BoxFit.cover,
-                      ), 
-                      const Spacer(),
-                      SizedBox(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [  
+                    const SizedBox(height: 10),
+                      Image(
+                      image: const AssetImage('images/sukioMahikari.png'),
+                      height: hasCheckOut ? 96 : 130,
+                      width: hasCheckOut ? 96 : 130,
+                      fit: BoxFit.cover,
+                    ), 
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      width: 300,
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.amber.shade500),
+                          foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
+                          overlayColor: MaterialStateProperty.resolveWith<Color>(
+                            (Set<MaterialState> states) {
+                              if (states.contains(MaterialState.pressed)) {
+                                return const Color(0xFFDDDDDD);
+                              }
+                              return const Color(0xFFDDDDDD);
+                            },
+                          ),
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(color: Colors.blue.shade900),
+                            ),
+                          ),
+                          padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.all(13)),
+                          textStyle: MaterialStateProperty.all<TextStyle>(
+                            TextStyle(
+                              fontFamily: 'Circular',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue.shade900,
+                            ),
+                          ),
+                        ),
+                        onPressed: () async { 
+                          setState(() { isClick = true; });
+                          _qrScanner(); 
+                          setState(() { isClick = false; });
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.qr_code_scanner,
+                              color: Colors.blue.shade900,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'CHECK OUT',
+                              style: TextStyle(
+                                fontFamily: 'Circular',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.blue.shade900,
+                              ),
+                            ),
+                            Visibility(
+                              visible: isClick,
+                              child: const Row(
+                                children: [
+                                  SizedBox(width: 10),
+                                  SizedBox( 
+                                    height: 17,
+                                    width: 17,
+                                    child: Center(
+                                      child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white70)
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: hasCheckOut ? 8 : 0),
+                    Visibility(
+                      visible: hasCheckOut,
+                      child: SizedBox(
                         width: 300,
                         child: ElevatedButton(
                           style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all<Color>(Colors.amber),
+                            backgroundColor: MaterialStateProperty.all<Color>(Colors.amber.shade500),
                             foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
                             overlayColor: MaterialStateProperty.resolveWith<Color>(
                               (Set<MaterialState> states) {
@@ -283,7 +368,7 @@ class _CheckInState extends State<CheckIn> {
                             shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                               RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: const BorderSide(color: Colors.blue),
+                                side: BorderSide(color: Colors.blue.shade900),
                               ),
                             ),
                             padding: MaterialStateProperty.all<EdgeInsets>(const EdgeInsets.all(13)),
@@ -296,88 +381,107 @@ class _CheckInState extends State<CheckIn> {
                               ),
                             ),
                           ),
-                          onPressed: () async { 
-                            setState(() { isClick = true; }); 
-                            _qrScanner(); 
-                            setState(() { isClick = false; });
+                          onPressed: () {
+                            requestCheckOut(); 
+                            setState(() { isCheckIn = false; });
                           },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.qr_code_scanner_outlined,
-                                color: Colors.blue.shade800,
+                                Icons.confirmation_num_outlined,
+                                color: Colors.blue.shade900, 
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'CHECK IN',
+                                'REQUEST CHECK OUT',
                                 style: TextStyle(
                                   fontFamily: 'Circular',
                                   fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.blue.shade800,
-                                ),
-                              ),
-                              Visibility(
-                                visible: isClick,
-                                child: const Row(
-                                  children: [
-                                    SizedBox(width: 10),
-                                    SizedBox( 
-                                      height: 17,
-                                      width: 17,
-                                      child: Center(
-                                        child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white70)
-                                      ),
-                                    )
-                                  ],
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.blue.shade900,
                                 ),
                               ),
                             ],
                           ),
-                        ), 
+                        ),
                       ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () {
-                          launchUrl(Uri.parse('https://www.itfs.org.sg')); 
-                        },
-                        child: const Image(
-                          image: AssetImage('images/logoitfs.png'),
-                          height: 40, 
-                          fit: BoxFit.cover,
-                        ), 
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'You have checked in to the center',
+                      style: TextStyle(
+                        color: Colors.orange.shade500,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 18
                       ),
-                      const SizedBox(height: 5),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'A CSR program of ', 
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Center(
+                          child: Text(
+                            'Date : ',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          )
+                        ),
+                        Center(
+                          child: Text(
+                            dateIn,
+                            style: TextStyle(color: Colors.orange.shade500, fontSize: 16),
+                          )
+                        ),  
+                        const SizedBox(width: 10), 
+                        const Center(
+                          child: Text(
+                            'Time : ',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          )
+                        ),
+                        Center(
+                          child: Text(
+                            timeIn,
+                            style: TextStyle(color: Colors.orange.shade500, fontSize: 16),
+                          ) 
+                        ), 
+                      ],
+                    ),  
+                    const Spacer(),
+                    GestureDetector(
+                      onTap: () {
+                        launchUrl(Uri.parse('https://www.itfs.org.sg')); 
+                      },
+                      child: Image(
+                        image: const AssetImage('images/logoitfs.png'),
+                        height: hasCheckOut ? 30 : 40, 
+                        fit: BoxFit.cover,
+                      ), 
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('A CSR program of ', style: TextStyle(color: Colors.white, fontSize: hasCheckOut ? 10 : 12)),
+                        GestureDetector(
+                          onTap: () {
+                            launchUrl(Uri.parse('https://www.cal4care.com/company/social-responsibility/'));
+                          },
+                          child: Text('Cal4care Group', 
                             style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12
+                              fontSize: hasCheckOut ? 10 : 12,
+                              color: Colors.white, 
+                              decorationColor: Colors.white,
+                              decoration: TextDecoration.underline,
                             )
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              launchUrl(Uri.parse('https://www.cal4care.com/company/social-responsibility/'));
-                            },
-                            child: const Text('Cal4care Group', 
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.white, 
-                                decorationColor: Colors.white,
-                                decoration: TextDecoration.underline,
-                              )
-                            )
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-                    ],
-                  ),
-                ),
+                          )
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                )
               ),
               Expanded(
                 child: Container(
@@ -402,7 +506,7 @@ class _CheckInState extends State<CheckIn> {
                           return SizedBox(
                             height: 400,
                             child: Center(
-                              child: CircularProgressIndicator(color: Colors.blue.shade500),
+                              child: CircularProgressIndicator(color: Colors.blue.shade500,),
                             ),
                           );
                         }
@@ -436,7 +540,7 @@ class _CheckInState extends State<CheckIn> {
                 ),
               )
             ],
-          ), 
+          )
         ),
         floatingActionButton: SizedBox(
           width: 38,
@@ -446,6 +550,7 @@ class _CheckInState extends State<CheckIn> {
             child: FloatingActionButton(
               onPressed: () {
                 refreshAttendance();
+                userSettings();
               },
               backgroundColor: Colors.white,
               foregroundColor: Colors.blue,
@@ -453,8 +558,8 @@ class _CheckInState extends State<CheckIn> {
               child: const Icon(Icons.refresh),
             ),
           ),
-        ), 
-      ), 
+        ),
+      ),
     );
   }
 }

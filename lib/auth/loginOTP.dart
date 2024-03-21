@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:async';
 
-import 'package:sukio_member/user/app.dart';
+import 'package:sukio_member/app.dart';
 
 class LoginOTP extends StatefulWidget {
   final String phoneNumber;
@@ -206,14 +206,14 @@ class _LoginOTPState extends State<LoginOTP> {
                                 SharedPreferences prefs = await SharedPreferences.getInstance();
                                 prefs.setString('authId', res['member_id'].toString()); 
                                 prefs.setString('membershipId', res['membership_id'].toString()); 
-                                prefs.setString('authId', res['first_name'].toString()); 
-                                prefs.setString('authId', res['last_name'].toString()); 
-                                prefs.setString('authId', res['email'].toString());
-                                prefs.setString('authId', res['country_code'].toString());
-                                prefs.setString('authId', res['phone_number'].toString());
-                                prefs.setString('authId', res['role'].toString());
-                                prefs.setString('authId', res['qr'].toString());
-                                prefs.setString('authId', res['group'].toString());
+                                prefs.setString('firstName', res['first_name'].toString()); 
+                                prefs.setString('lastName', res['last_name'].toString()); 
+                                prefs.setString('email', res['email'].toString());
+                                prefs.setString('countryCode', res['country_code'].toString());
+                                prefs.setString('phoneNumber', res['phone_number'].toString());
+                                prefs.setString('role', res['role'].toString());
+                                prefs.setString('qr', res['qr'].toString());
+                                prefs.setString('group', res['group'].toString());
 
                                 Navigator.pushReplacement(context,
                                   MaterialPageRoute(builder: (context) => const App()),

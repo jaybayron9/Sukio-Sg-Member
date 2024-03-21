@@ -221,15 +221,15 @@ class _RegisterState extends State<Register> {
                                   ),
                                 ),
                                 Visibility(
-                                  visible: firstNameErr.isNotEmpty,
+                                  visible: lastNameErr.isNotEmpty,
                                   child: Align(
                                     alignment: Alignment.bottomLeft,
                                     child:  Container(
                                       margin: const EdgeInsets.only(left: 15),
-                                      child: Text(firstNameErr, style: TextStyle(color: Colors.red.shade200))
+                                      child: Text(lastNameErr, style: TextStyle(color: Colors.red.shade200))
                                     )     
                                   ),
-                                ),  
+                                ),
                               ],
                             ),
                           ),

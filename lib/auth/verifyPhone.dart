@@ -46,19 +46,16 @@ class _VerifyPhoneState extends State<VerifyPhone> {
     final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/sendOTP"), body: {
       'phone_number': widget.phoneNumber,
       'country_code': widget.countryCode,
-    });
-
+    }); 
     if (res.statusCode == 200) {
-      final Map<String, dynamic> responseData = json.decode(res.body);
-
+      final Map<String, dynamic> responseData = json.decode(res.body); 
       if (responseData['status'].toString() == 'true') {
         setState(() {
           msgSuccess = responseData['message'];
         });
         return isResendSuccess = true;
       }
-    }
-
+    } 
     return isResendSuccess = false;
   }  
 
