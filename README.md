@@ -26,6 +26,10 @@ To get started with Sukio Mahikari, follow these steps:
 
 3. **Successful Register**: Once you have successfully registered, there will be a pop-up dialog indicating that your membership request is pending approval by the administrator. Please wait patiently for approval.
 
+    <p align="center">
+        <img src="docs/successRegister.jpeg" alt="Registration Screenshot" width="200">
+    </p>
+
 4. **Explore Events**: Browse through the list of community events and gatherings available. You can view event details, such as date, time, and location.
 
 5. **Check-In/Check-Out**: Upon attending an event, use our QR code scanning feature to check in. Scan the event's unique QR code upon arrival and scan again when leaving to check out.
