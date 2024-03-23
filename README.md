@@ -2,40 +2,44 @@
 
 ## Introduction
 
-Sukio Mahikari for member is a Community App designed to streamline the check-in and check-out process for community events and gatherings. With our intuitive QR code scanning feature, managing attendance has never been easier.
+Welcome to Sukio Mahikari, the ultimate Community App for members designed to streamline the check-in and check-out process for community events and gatherings. With our intuitive QR code scanning feature, managing attendance has never been easier.
 
 ## Prerequisites
 
 ## Getting Started
 
-- If you have no account you need to register
-<p align="center">
-    <img src="docs/register.jpeg" alt="Image Alt Text" width="200">
-</p>
+To get started with Sukio Mahikari, follow these steps:
+
+1. **Register for an Account**: If you don't have an account yet, you need to register.
+   
+    <p align="center">
+        <img src="docs/register.jpeg" alt="Registration Screenshot" width="200">
+    </p>
+
+    Make sure to fill out the required information accurately to create your account.
+
+2. **Log in**: Once you have registered, log in to your account using your credentials.
+
+3. **Explore Events**: Browse through the list of community events and gatherings available. You can view event details, such as date, time, and location.
+
+4. **Check-In/Check-Out**: Upon attending an event, use our QR code scanning feature to check in. Scan the event's unique QR code upon arrival and scan again when leaving to check out.
 
 ## Key Features
 
-- **QR Code Check-In/Check-Out**: Simplify attendance tracking for community events. Participants can check in and check out by scanning event-specific QR codes using their smartphones.
+- **QR Code Check-In/Check-Out**: Simplify attendance tracking for community events.
   
-- **Real-time Attendance Monitoring**: Stay updated with real-time attendance data to manage events more effectively.
-
-- **User-Friendly Interface**: Our app ensures a seamless experience for both organizers and participants with clear instructions and intuitive design.
-
-- **Event Management Tools**: Beyond attendance tracking, our app offers event management tools for registration and communication with attendees.
-
-## How It Works
-
-1. **Event Setup**: Organizers create events and generate unique QR codes for check-in/check-out.
+- **Real-time Attendance Monitoring**: Stay updated with real-time attendance data.
   
-2. **Participant Check-In**: Participants scan the QR code using their smartphones upon arrival to check in.
-  
-3. **Real-time Tracking**: Organizers monitor attendance in real-time through the app's dashboard.
-  
-4. **Check-Out**: Participants scan the QR code again upon leaving to check out and complete their attendance record.
+- **User-Friendly Interface**: Enjoy a seamless experience with clear instructions and intuitive design.
 
-## Getting Started
+## Support and Contact
 
-To get started with [Your Application Name], follow these steps:
+For support or inquiries, please contact [Your Contact Information].
 
-1. Clone this repository:
+## Acknowledgements
 
+[List any acknowledgements or credits here, such as libraries or resources used.]
+
+## License
+
+[Specify the license under which the project is distributed. For example, MIT License, Apache License 2.0, etc.]
