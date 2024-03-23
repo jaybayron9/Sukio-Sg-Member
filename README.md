@@ -18,11 +18,13 @@ To get started with Sukio Mahikari, follow these steps:
 
     Make sure to fill out the required information accurately to create your account.
 
-2. **Log in**: Once you have registered, log in to your account using your credentials.
+2. **Verify Phone Number**: After registering, you'll need to verify your phone number. This step helps ensure the security of your account and allows us to send you important notifications.
 
-3. **Explore Events**: Browse through the list of community events and gatherings available. You can view event details, such as date, time, and location.
+3. **Log in**: Once you have registered, log in to your account using your credentials.
 
-4. **Check-In/Check-Out**: Upon attending an event, use our QR code scanning feature to check in. Scan the event's unique QR code upon arrival and scan again when leaving to check out.
+4. **Explore Events**: Browse through the list of community events and gatherings available. You can view event details, such as date, time, and location.
+
+5. **Check-In/Check-Out**: Upon attending an event, use our QR code scanning feature to check in. Scan the event's unique QR code upon arrival and scan again when leaving to check out.
 
 ## Key Features
 
