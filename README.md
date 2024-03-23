@@ -24,7 +24,7 @@ To get started with Sukio Mahikari, follow these steps:
         <img src="docs/verifyPhone.jpeg" alt="Registration Screenshot" width="200">
     </p>
 
-3. **Log in**: Once you have successfully registered there will be a pop app dialog that you need to wait the approval of your membership request by the administrator
+3. **Successful Register**: Once you have successfully registered, there will be a pop-up dialog indicating that your membership request is pending approval by the administrator. Please wait patiently for approval.
 
 4. **Explore Events**: Browse through the list of community events and gatherings available. You can view event details, such as date, time, and location.
 
