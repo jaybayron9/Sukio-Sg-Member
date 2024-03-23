@@ -20,6 +20,10 @@ To get started with Sukio Mahikari, follow these steps:
 
 2. **Verify Phone Number**: After registering, you'll need to verify your phone number. This step helps ensure the security of your account and allows us to send you important notifications.
 
+    <p align="center">
+        <img src="docs/verifyPhone.jpeg" alt="Registration Screenshot" width="200">
+    </p>
+
 3. **Log in**: Once you have registered, log in to your account using your credentials.
 
 4. **Explore Events**: Browse through the list of community events and gatherings available. You can view event details, such as date, time, and location.
