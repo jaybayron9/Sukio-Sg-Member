@@ -5,6 +5,7 @@
 Welcome to Sukio Mahikari, the ultimate Community App for members designed to streamline the check-in and check-out process for community events and gatherings. With our intuitive QR code scanning feature, managing attendance has never been easier.
 
 ## Prerequisites
+- Compatible with all mobile phones, including both Android and iOS devices.
 
 ## Getting Started
 
@@ -84,18 +85,3 @@ To get started with Sukio Mahikari, follow these steps:
         <img src="docs/checkOutError.jpeg" alt="Check-In Error" width="200">
     </p>
   
-- **Real-time Attendance Monitoring**: Stay updated with real-time attendance data.
-  
-- **User-Friendly Interface**: Enjoy a seamless experience with clear instructions and intuitive design.
-
-## Support and Contact
-
-For support or inquiries, please contact [Your Contact Information].
-
-## Acknowledgements
-
-[List any acknowledgements or credits here, such as libraries or resources used.]
-
-## License
-
-[Specify the license under which the project is distributed. For example, MIT License, Apache License 2.0, etc.]
