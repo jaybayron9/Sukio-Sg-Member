@@ -30,7 +30,14 @@ To get started with Sukio Mahikari, follow these steps:
         <img src="docs/successRegister.jpeg" alt="Registration Screenshot" width="200">
     </p>
 
-4. **Explore Events**: Browse through the list of community events and gatherings available. You can view event details, such as date, time, and location.
+4. **Login**: After your account has been approved by the administrator, you can log in using your mobile number and One-time-password (OTP). The OTP will be sent to your registered mobile number. Enter the OTP to complete the login process.
+
+    <p align="center">
+        <img src="docs/login.jpeg" alt="Registration Screenshot" width="200">
+    </p>
+    <p align="center">
+        <img src="docs/loginOTP.jpeg" alt="Registration Screenshot" width="200">
+    </p>
 
 5. **Check-In/Check-Out**: Upon attending an event, use our QR code scanning feature to check in. Scan the event's unique QR code upon arrival and scan again when leaving to check out.
 
