@@ -7,7 +7,7 @@ Sukio Mahikari for member is a Community App designed to streamline the check-in
 ## Prerequisites
 
 ## Getting Started
-
+![Image Alt Text](docs/cal4care.png)
 
 ## Key Features
 
