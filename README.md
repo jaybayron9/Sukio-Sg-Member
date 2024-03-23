@@ -9,8 +9,7 @@ Sukio Mahikari for member is a Community App designed to streamline the check-in
 ## Getting Started
 
 - If you have no account you need to register
-![Image Alt Text](docs/register.jpeg)
-
+<img src="docs/register.jpeg" alt="Image Alt Text" width="400"> 
 
 -----
 ![Image Alt Text](docs/cal4care.png)
