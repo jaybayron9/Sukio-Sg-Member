@@ -8,21 +8,12 @@ import 'dart:convert';
 
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:sukio_member/auth/login.dart';
+import 'package:sukio_member/auth/uploadProfilePict.dart';
+import 'package:sukio_member/utils/registerUser.dart';
 
-class VerifyPhone extends StatefulWidget {
-  final String firstName;
-  final String lastName;
-  final String phoneNumber;
-  final String email;
-  final String countryCode;
-
+class VerifyPhone extends StatefulWidget {  
   const VerifyPhone({
-    Key? key,
-    required this.firstName,
-    required this.lastName,
-    required this.phoneNumber,
-    required this.email,
-    required this.countryCode,
+    Key? key
   }) : super(key: key);
 
   @override
@@ -30,6 +21,7 @@ class VerifyPhone extends StatefulWidget {
 }
 
 class _VerifyPhoneState extends State<VerifyPhone> {
+  Map<String, String?> user = {};
   late Timer _timer;
   final bool _isVerified = false;
   final bool _isLoading = false;
@@ -42,10 +34,23 @@ class _VerifyPhoneState extends State<VerifyPhone> {
   dynamic invalidCode = ''; 
   int _start = 60; 
 
+  @override
+  void initState() {
+    super.initState(); 
+    registeredData();
+  }
+
+  registeredData() async { 
+    Map<String, String?> userData = await RegisterUserData.getUser(); 
+    setState(() {
+      user =  userData;
+    }); 
+  }
+
   Future<bool> resendOTP() async {
     final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/sendOTP"), body: {
-      'phone_number': widget.phoneNumber,
-      'country_code': widget.countryCode,
+      'phone_number': user['phoneNumber'],
+      'country_code': user['countryCode'],
     }); 
     if (res.statusCode == 200) {
       final Map<String, dynamic> responseData = json.decode(res.body); 
@@ -169,23 +174,32 @@ class _VerifyPhoneState extends State<VerifyPhone> {
                   children: [
                     MaterialButton(
                       disabledColor: Colors.grey.shade300,
-                      onPressed: () async {
+                      onPressed: () async { 
                         setState(() { noError = true; });    
                         final response = await http.post(
                           Uri.parse("https://ww2.selfiesmile.app/members/verifyPhone"),
-                          body: {
-                            'first_name': widget.firstName,
-                            'last_name': widget.lastName,
-                            'email': widget.email,
-                            'country_code': widget.countryCode,
-                            'phone_number': widget.phoneNumber,
+                          body: { 
+                            'first_name': user['firstName'],
+                            'last_name': user['lastName'],
+                            'email': user['email'],
+                            'country_code': user['countryCode'],
+                            'phone_number': user['phoneNumber'],
                             'phone_code': _code,
                           }
                         );
 
                         if (response.statusCode == 200) {
                           final Map<String, dynamic> res = json.decode(response.body); 
-                          if (res['status'].toString() == 'true') {  
+                          if (res['status'].toString() == 'true') {
+                            await RegisterUserData().setRegisterId(res['request_id']); 
+                            // Navigator.pushReplacement(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (BuildContext context) => const UploadProfilePict(),
+                            //     fullscreenDialog: true,
+                            //   ),
+                            // );
+
                             AwesomeDialog(
                               context: context,
                               dialogType: DialogType.success,
@@ -201,15 +215,15 @@ class _VerifyPhoneState extends State<VerifyPhone> {
                                 OneSignal.Notifications.clearAll(); 
                                 OneSignal.User.pushSubscription.addObserver((state) async { 
                                   await http.post(Uri.parse('https://ww2.selfiesmile.app/members/allowNotification'), body: { 
-                                    'country_code': widget.countryCode,
-                                    'phone_number': widget.phoneNumber,
+                                    'country_code': user['countryCode'],
+                                    'phone_number': user['phoneNumber'],
                                     'subscription_id': OneSignal.User.pushSubscription.id.toString()
-                                  }); 
-                                });  
+                                  });
+                                });
                                 OneSignal.Notifications.addPermissionObserver((state) async { 
                                   await http.post(Uri.parse('https://ww2.selfiesmile.app/members/allowNotification'), body: { 
-                                    'country_code': widget.countryCode,
-                                    'phone_number': widget.phoneNumber,
+                                    'country_code': user['countryCode'],
+                                    'phone_number': user['phoneNumber'],
                                     'subscription_id': OneSignal.User.pushSubscription.id.toString()
                                   }); 
                                 }); 
@@ -219,7 +233,7 @@ class _VerifyPhoneState extends State<VerifyPhone> {
                                   MaterialPageRoute(builder: (context) => const Login()),
                                 );
                               },
-                            ).show();   
+                            ).show();
                           } else {
                             setState(() {
                               invalidCode = res['invalid_code'].toString();

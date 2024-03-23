@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +8,7 @@ import 'dart:convert';
 
 import 'package:sukio_member/auth/login.dart';
 import 'package:sukio_member/auth/verifyPhone.dart';
+import 'package:sukio_member/utils/registerUser.dart';
 
 class Register extends StatefulWidget {
   const Register({ Key? key }) : super(key: key);
@@ -361,31 +364,30 @@ class _RegisterState extends State<Register> {
                         onPressed: () async { 
                           setState(() { noError = true; });
                           try {
-                            final response = await http.post(
-                                Uri.parse("https://ww2.selfiesmile.app/members/register"),
-                                body: {
-                                  'first_name': firstNameController.text,
-                                  'last_name': lastNameController.text,
-                                  'phone_number': phoneNumberController.text,
-                                  'email': emailController.text,
-                                  'country_code': country.phoneCode
-                                });
-                
+                            final response = await http.post( Uri.parse("https://ww2.selfiesmile.app/members/register"), body: {
+                              'first_name': firstNameController.text,
+                              'last_name': lastNameController.text,
+                              'phone_number': phoneNumberController.text,
+                              'email': emailController.text,
+                              'country_code': country.phoneCode
+                            }); 
                             if (response.statusCode == 200) {
-                              final Map<String, dynamic> res = json.decode(response.body);   
-                              setState(() {
-                                if (res['status'].toString() == 'false') { 
-                                    firstNameErr = res['empty_fname'] ?? '';
-                                    lastNameErr = res['empty_lname'] ?? '';
-                                    emailErr = res['empty_email'] ?? '';
-                                    phoneNumErr = res['empty_phone'] ?? ''; 
-                                    if (res['empty_email'].toString() == '') {
-                                      invEmailErr = res['invalid_email'] ?? '';
-                                    } 
-                                    if (res['empty_phone'].toString() == '') {
-                                      existPhoneErr = res['number_exist'] ?? '';
-                                    } 
-                                } else { 
+                              final Map<String, dynamic> res = json.decode(response.body);    
+                              if (res['status'].toString() == 'false') { 
+                                setState(() {
+                                  firstNameErr = res['empty_fname'] ?? '';
+                                  lastNameErr = res['empty_lname'] ?? '';
+                                  emailErr = res['empty_email'] ?? '';
+                                  phoneNumErr = res['empty_phone'] ?? ''; 
+                                  if (res['empty_email'].toString() == '') {
+                                    invEmailErr = res['invalid_email'] ?? '';
+                                  } 
+                                  if (res['empty_phone'].toString() == '') {
+                                    existPhoneErr = res['number_exist'] ?? '';
+                                  } 
+                                });
+                              } else { 
+                                setState(() {
                                   firstNameErr = '';
                                   lastNameErr = '';
                                   emailErr = '';
@@ -394,20 +396,21 @@ class _RegisterState extends State<Register> {
                                   invPhoneErr = '';
                                   existPhoneErr = '';
                                   firstNameErr = ''; 
-                                  Navigator.push(context,
-                                    MaterialPageRoute(
-                                      builder: (context) => VerifyPhone(
-                                        firstName: firstNameController.text,
-                                        lastName: lastNameController.text,
-                                        phoneNumber: phoneNumberController.text,
-                                        email: emailController.text,
-                                        countryCode: country.phoneCode,
-                                      )
-                                    ),
-                                  );
-                                }
-                                 noError = false;
-                              });
+                                });
+                                await RegisterUserData().setRegisterInfo(
+                                  firstNameController.text,
+                                  lastNameController.text,
+                                  emailController.text,
+                                  country.phoneCode,
+                                  phoneNumberController.text,
+                                ); 
+                                Navigator.push(context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const VerifyPhone()
+                                  ),
+                                );
+                              }
+                              setState(() { noError = false; }); 
                             }
                           } catch (e) {
                             debugPrint("Error: $e");

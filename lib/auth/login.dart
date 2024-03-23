@@ -2,7 +2,7 @@ import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; 
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sukio_member/auth/loginOTP.dart';
 import 'package:sukio_member/auth/register.dart';

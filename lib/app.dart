@@ -2,8 +2,10 @@
 
 import 'dart:async'; 
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sukio_member/auth/login.dart';
@@ -13,9 +15,9 @@ import 'package:sukio_member/user/dashboard/checkIn.dart';
 import 'package:sukio_member/user/dashboard/checkOut.dart';
 import 'package:http/http.dart' as http;
 import 'package:sukio_member/user/ebooks.dart';
-import 'dart:convert';  
-
-import 'package:sukio_member/user/events.dart';  
+import 'dart:convert';   
+import 'package:sukio_member/user/events.dart';
+import 'package:sukio_member/utils/user.dart'; 
 
 class App extends StatefulWidget {
   const App({ Key? key }) : super(key: key);
@@ -25,19 +27,18 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
+  Map<String, String?> user = {};
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();  
   String _debugLabelString = ''; 
-  List<Map<String, dynamic>> memberLogsData = []; 
+  List<Map<String, dynamic>> memberLogsData = [];  
   bool isCheckIn = false;
-  String title = ''; 
-  String firstName = '';
-  String lastName = '';
+  String title = '';
   String membershipId = '';
 
   @override
   void initState() {
-    super.initState();
+    super.initState(); 
     OneSignal.Debug.setLogLevel(OSLogLevel.verbose); 
     OneSignal.Debug.setAlertLevel(OSLogLevel.none);
     OneSignal.consentRequired(false); 
@@ -62,13 +63,20 @@ class _AppState extends State<App> {
       });
     }); 
     OneSignal.Notifications.requestPermission(true);
-    Timer.periodic(const Duration(seconds: 3), (timer) { 
+    Timer.periodic(const Duration(seconds: 3), (timer) {
       isNotCheckOut();
     });
     checkAccountStatus();
-    isNotCheckOut();
-    userInfo();
-    websocket();
+    isNotCheckOut(); 
+    userData();
+    websocket(); 
+  } 
+
+  userData() async { 
+    Map<String, String?> userData = await GetUser.getUser(); 
+    setState(() {
+      user =  userData;
+    });
   }
 
   websocket() async {
@@ -118,15 +126,6 @@ class _AppState extends State<App> {
         prefs.remove('authId'); 
       }
     }
-  } 
-
-  Future<void> userInfo() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      firstName = prefs.getString('firstName').toString();
-      lastName = prefs.getString('lastName').toString();
-      membershipId = prefs.getString('membershipId').toString(); 
-    });  
   }  
 
   isNotCheckOut() async {
@@ -234,9 +233,33 @@ class _AppState extends State<App> {
                       margin: const EdgeInsets.only(top: 15),
                       child: Row(
                         children: [
-                          const CircleAvatar(
-                            radius: 30,
-                            backgroundImage: AssetImage('images/person.png'),
+                          TextButton(
+                            onPressed: () async { 
+                              FilePickerResult? result = await FilePicker.platform.pickFiles();
+                              if (result != null) { 
+                                var url = Uri.parse('https://ww2.selfiesmile.app/members/uploadProfile');
+                                var request = http.MultipartRequest('POST', url)
+                                  ..files.add(await http.MultipartFile.fromPath('file', result.files.single.path!));
+
+                                var streamedResponse = await request.send();
+                                var response = await http.Response.fromStream(streamedResponse); 
+                                var responseData = json.decode(response.body);
+                                
+                                if (response.statusCode == 200) {
+                                  print(responseData);
+                                  print('File uploaded successfully');
+                                } else {
+                                  print('File upload failed with status code ${response.statusCode}'); 
+                                  print('Error response: $responseData');
+                                }
+                              }
+                            }, 
+                            child: CircleAvatar(
+                              radius: 30,
+                               backgroundImage: NetworkImage(
+                                'https://ww2.selfiesmile.app/img/profiles/${user['profilePicture']}',
+                              ),
+                            ),
                           ),
                           Container(
                             margin: const EdgeInsets.only(left: 10),
@@ -245,11 +268,11 @@ class _AppState extends State<App> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '$firstName $lastName',
+                                  '${user['firstName']} ${user['lastName']}',
                                   style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
                                 ),
                                 Text(
-                                  'ID: $membershipId',
+                                  'ID: ${user['membershipId']}',
                                   style: const TextStyle(fontWeight: FontWeight.w400, color: Colors.white70, fontSize: 12),
                                 ),
                               ],
@@ -315,8 +338,8 @@ class _AppState extends State<App> {
                 leading: const Icon(Icons.logout),
                 title: const Text('Logout'),
                 onTap: () async { 
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  prefs.remove('authId');
+                  RemoveUser user = RemoveUser();
+                  await user.removeUser();
                   Navigator.push(context,
                     MaterialPageRoute(
                       builder: (context) => const Login(),
