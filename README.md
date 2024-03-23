@@ -35,9 +35,9 @@ To get started with Sukio Mahikari, follow these steps:
     <p align="center">
         <img src="docs/login.jpeg" alt="Registration Screenshot" width="200">
     </p>
-    <p align="center">
+    <!-- <p align="center">
         <img src="docs/loginOTP.jpeg" alt="Registration Screenshot" width="200">
-    </p>
+    </p> -->
 
 5. **Check-In/Check-Out**: Upon attending an event, use our QR code scanning feature to check in. Scan the event's unique QR code upon arrival and scan again when leaving to check out.
 
