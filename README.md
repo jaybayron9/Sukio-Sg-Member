@@ -49,18 +49,22 @@ To get started with Sukio Mahikari, follow these steps:
 ## How to use the Check-In/Check-Out
 
 - **QR Code Check-In**: To check in at an event, follow these steps:
-  1. Open the Sukio Mahikari app on your device.
-  2. Navigate to the event you are attending.
-  3. Click the "Check-In" button.
-  4. The app will activate the camera for scanning the event's QR code.
-  5. Hold your device steady and position it to scan the QR code displayed at the event venue.
-  6. Once the QR code is successfully scanned, you will be checked in to the event.
+  1. Click the "Check-In" button on your dashboard.
+  2. The app will activate the camera for scanning the event's QR code.
+  3. Hold your device steady and position it to scan the QR code displayed at the event venue.
+  4. Once the QR code is successfully scanned, you will be checked in to the event.
 
-  <div style="display:flex; justify-content:center;">
-        <img src="docs/scanQRCheckIn.jpeg" alt="Login Screenshot" width="200">
-        <img src="docs/successCheckIn.jpeg" alt="OTP Screenshot" width="200">
-        <img src="docs/checkOutDashboard.jpeg" alt="OTP Screenshot" width="200">
+    <div style="display:flex; justify-content:center;">
+        <img src="docs/scanQRCheckIn.jpeg" alt="Scan QR for Check-In" width="200">
+        <img src="docs/successCheckIn.jpeg" alt="Success Check-In" width="200">
+        <img src="docs/checkOutDashboard.jpeg" alt="Check-Out on Dashboard" width="200">
     </div>
+
+    If you accidentally scan again the check-in qr it will show an error message indicating that you have already checked in.
+
+    <p align="center">
+        <img src="docs/checkInError.jpeg" alt="Registration Screenshot" width="200">
+    </p>
   
 - **Real-time Attendance Monitoring**: Stay updated with real-time attendance data.
   
