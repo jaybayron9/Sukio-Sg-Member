@@ -85,3 +85,9 @@ To get started with Sukio Mahikari, follow these steps:
         <img src="docs/checkOutError.jpeg" alt="Check-In Error" width="200">
     </p>
   
+## Other Features
+
+- **Calendar Events**: Stay updated with real-time group events, including those specific to your group. Our calendar feature ensures you never miss out on important gatherings or activities.
+
+- **Account Deletion**: Need to remove your account? Simply submit a request for account deletion, and our system will handle the process efficiently.
+
