@@ -81,7 +81,7 @@ To get started with Sukio Mahikari, follow these steps:
     If you accidentally scan the check-out QR code again, it will show an error message indicating that you have to check-in first before check-out
 
     <p align="center">
-        <img src="docs/checkInError.jpeg" alt="Check-In Error" width="200">
+        <img src="docs/checkOutError.jpeg" alt="Check-In Error" width="200">
     </p>
   
 - **Real-time Attendance Monitoring**: Stay updated with real-time attendance data.
