@@ -57,15 +57,15 @@ To get started with Sukio Mahikari, follow these steps:
   4. Once the QR code is successfully scanned, you will be checked in to the event.
 
     <div style="display:flex; justify-content:center;">
-        <img src="docs/scanCheckOutQR.jpeg" alt="Scan QR for Check-In" width="200">
-        <img src="docs/successCheckOut.jpeg" alt="Success Check-In" width="200">
-        <img src="docs/checkInError.jpeg" alt="Check-Out on Dashboard" width="200">
+        <img src="docs/scanQRCheckIn.jpeg" alt="Scan QR for Check-In" width="200">
+        <img src="docs/successCheckIn.jpeg" alt="Success Check-In" width="200">
+        <img src="docs/checkOutDashboard.jpeg" alt="Check-Out on Dashboard" width="200">
     </div>
 
-    If you accidentally scan the check-out QR code again, it will show an error message indicating that you have to check-in first before check-out
+    If you accidentally scan the check-int QR code again, it will show an error message indicating that you have already checked-in
 
     <p align="center">
-        <img src="docs/checkInError.jpeg" alt="Check-In Error" width="200">
+        <img src="docs/checkOutError.jpeg" alt="Check-In Error" width="200">
     </p>
 
 - **QR Code Check-Out**: To check out at an event, follow these steps:
@@ -73,12 +73,18 @@ To get started with Sukio Mahikari, follow these steps:
     2. The app will activate the camera for scanning the event's QR code.
     3. Hold your device steady and position it to scan the QR code displayed at the event venue.
     4. Once the QR code is successfully scanned, you will be checked out to the event.
-
+ 
     <div style="display:flex; justify-content:center;">
-        <img src="docs/scanQRCheckIn.jpeg" alt="Scan QR for Check-In" width="200">
-        <img src="docs/successCheckIn.jpeg" alt="Success Check-In" width="200">
+        <img src="docs/scanCheckOutQR.jpeg" alt="Scan QR for Check-In" width="200">
+        <img src="docs/successCheckOut.jpeg" alt="Success Check-In" width="200">
         <img src="docs/checkOutDashboard.jpeg" alt="Check-Out on Dashboard" width="200">
     </div>
+
+    If you accidentally scan the check-out QR code again, it will show an error message indicating that you have to check-in first before check-out
+
+    <p align="center">
+        <img src="docs/checkInError.jpeg" alt="Check-In Error" width="200">
+    </p>
   
 - **Real-time Attendance Monitoring**: Stay updated with real-time attendance data.
   
