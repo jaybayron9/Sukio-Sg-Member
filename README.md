@@ -39,6 +39,11 @@ To get started with Sukio Mahikari, follow these steps:
 
 5. **Access to Dashboard**: After logging in, you can access the dashboard where you can browse through the list of community events and gatherings available. You can view event details, such as date, time, and other features, especially the check-in and check-out functionalities.
 
+    <div style="display:flex; justify-content:center;">
+        <img src="docs/dashboard.jpeg" alt="Login Screenshot" width="200">
+        <img src="docs/drawer.jpeg" alt="OTP Screenshot" width="200">
+    </div>
+
 6. **Check-In/Check-Out**: Upon attending an event, use our QR code scanning feature to check in. Scan the event's unique QR code upon arrival and scan again when leaving to check out.
 
 ## Key Features
