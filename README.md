@@ -55,6 +55,12 @@ To get started with Sukio Mahikari, follow these steps:
   4. The app will activate the camera for scanning the event's QR code.
   5. Hold your device steady and position it to scan the QR code displayed at the event venue.
   6. Once the QR code is successfully scanned, you will be checked in to the event.
+
+  <div style="display:flex; justify-content:center;">
+        <img src="docs/scanQRCheckIn.jpeg" alt="Login Screenshot" width="200">
+        <img src="docs/successCheckIn.jpeg" alt="OTP Screenshot" width="200">
+        <img src="docs/checkOutDashboard.jpeg" alt="OTP Screenshot" width="200">
+    </div>
   
 - **Real-time Attendance Monitoring**: Stay updated with real-time attendance data.
   
