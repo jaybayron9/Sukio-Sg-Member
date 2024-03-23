@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Welcome to Sukio Mahikari, the ultimate Community App for members designed to streamline the check-in and check-out process for community events and gatherings. With our intuitive QR code scanning feature, managing attendance has never been easier.
+The Sukio Mahikari member app, a Community App tailored for members to facilitate seamless check-in and check-out processes during community events and gatherings. Our app simplifies attendance management through intuitive QR code scanning features, ensuring efficient event participation and tracking. 
 
 ## Prerequisites
 - Compatible with all mobile phones, including both Android and iOS devices.
