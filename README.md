@@ -63,7 +63,7 @@ To get started with Sukio Mahikari, follow these steps:
     If you accidentally scan the check-int QR code again, it will show an error message indicating that you have already checked-in
 
     <p align="center">
-        <img src="docs/successCheckOutError.jpeg" alt="Check-In Error" width="200">
+        <img src="docs/checkInError.jpeg" alt="Check-In Error" width="200">
     </p>
 
 - **QR Code Check-Out**: To check out at an event, follow these steps:
@@ -75,7 +75,7 @@ To get started with Sukio Mahikari, follow these steps:
     <div style="display:flex; justify-content:center;">
         <img src="docs/scanCheckOutQR.jpeg" alt="Scan QR for Check-In" width="200">
         <img src="docs/successCheckOut.jpeg" alt="Success Check-In" width="200">
-        <img src="docs/checkOutDashboard.jpeg" alt="Check-Out on Dashboard" width="200">
+        <img src="docs/dashboard.jpeg" alt="Check-Out on Dashboard" width="200">
     </div>
 
     If you accidentally scan the check-out QR code again, it will show an error message indicating that you have to check-in first before check-out
