@@ -1,27 +1,41 @@
+// ignore_for_file: avoid_print
+
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert'; 
 import 'package:sukio_member/auth/loginOTP.dart';
 import 'package:sukio_member/auth/register.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:local_auth_android/local_auth_android.dart';
+import 'package:local_auth_darwin/local_auth_darwin.dart';
+import 'package:local_auth/error_codes.dart' as auth_error;
+
+
 
 class Login extends StatefulWidget {
   const Login({ Key? key }) : super(key: key);
 
   @override
   _LoginState createState() => _LoginState();
-}
+} 
+
 
 class _LoginState extends State<Login> {
+  final LocalAuthentication _biometricAuth = LocalAuthentication();
   final GlobalKey<FormState> loginForm = GlobalKey<FormState>();
   final TextEditingController phoneNumberController = TextEditingController();
-  Country country = CountryParser.parseCountryCode('SG'); 
-  String emptyPhonErr = ''; 
+  Country country = CountryParser.parseCountryCode('SG');
+  String emptyPhonErr = '';
   String phoneNotFoundErr = '';
   String notApprove = '';
-  bool noError = false; 
+  bool noError = false;
+
+  @override
+  void initState() {
+    super.initState();  
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -259,6 +273,58 @@ class _LoginState extends State<Login> {
                           ),
                         ),
                       ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final bool canAuthenticateWithBiometrics = await _biometricAuth.canCheckBiometrics;
+                            print(canAuthenticateWithBiometrics);
+                            final bool canAuthenticate = canAuthenticateWithBiometrics || await _biometricAuth.isDeviceSupported();
+                            print(canAuthenticate);
+                            final List<BiometricType> availableBiometrics = await _biometricAuth.getAvailableBiometrics();
+                            print(availableBiometrics);
+                            final bool didAuthenticate = await _biometricAuth.authenticate(
+                              localizedReason: 'Please authenticate to show account balance',
+                              authMessages: const <AuthMessages>[
+                                AndroidAuthMessages(
+                                  signInTitle: 'Oops! Biometric authentication required!',
+                                  cancelButton: 'No thanks',
+                                ),
+                                IOSAuthMessages(
+                                  cancelButton: 'No thanks',
+                                ),
+                              ],
+                              options: const AuthenticationOptions()
+                            );
+                            print(didAuthenticate);
+                            try {
+                              print("<!-- THIS IS CALLED");
+                              final bool didAuthenticate = await _biometricAuth.authenticate(
+                                  localizedReason: 'Please authenticate to show account balance',
+                                  authMessages: const <AuthMessages>[
+                                    AndroidAuthMessages(
+                                      signInTitle: 'Oops! Biometric authentication required!',
+                                      cancelButton: 'No thanks',
+                                    ),
+                                    IOSAuthMessages(
+                                      cancelButton: 'No thanks',
+                                    ),
+                                  ],
+                                  options: const AuthenticationOptions());
+                              print(didAuthenticate); 
+                            } on PlatformException catch (e) {
+                              if (e.code == auth_error.notEnrolled) {
+                                print("<!-- THIS IS ERROR 1");
+                                // Add handling of no hardware here.
+                              } else if (e.code == auth_error.lockedOut || e.code == auth_error.permanentlyLockedOut) {
+                                print("<!-- THIS IS ERROR 2");
+                                // ...
+                              } else {
+                                print("<!-- THIS IS ERROR 3");
+                                // ...
+                              }
+                            }
+                        }, 
+                        child: const Text('Face Id')
+                      )
                     ],
                   ),
                 ),

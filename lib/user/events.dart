@@ -127,12 +127,20 @@ class _EventsState extends State<Events> {
           // Events description
           Expanded(
             child: filteredEvents.isEmpty
-              ? const Center(
+              ? Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 20),  
+                decoration: BoxDecoration( 
+                  color: Colors.blue.shade900,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(30.0)),
+                ),
+                child: const Center(
                   child: Text(
                     'No event(s)',
-                    style: TextStyle(fontSize: 18),
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
-                )
+                ),
+              )
               : Container(
                   padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 20),  
                   decoration: BoxDecoration( 
@@ -195,11 +203,11 @@ class _EventsState extends State<Events> {
             backgroundColor: Colors.white,
             foregroundColor: Colors.blue,
             shape: const CircleBorder(),
-            child: const Text('Today'),
+            child: const Icon(Icons.today_rounded),
           ),
         ),
       ), 
-    );
+    ); 
   }
 }
 
