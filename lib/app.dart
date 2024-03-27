@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, unnecessary_constructor_name, avoid_print
+// ignore_for_file: deprecated_member_use, unnecessary_constructor_name, avoid_print, use_build_context_synchronously
 
 import 'dart:async'; 
 import 'package:awesome_dialog/awesome_dialog.dart';
@@ -17,7 +17,8 @@ import 'package:http/http.dart' as http;
 import 'package:sukio_member/user/ebooks.dart';
 import 'dart:convert';   
 import 'package:sukio_member/user/events.dart';
-import 'package:sukio_member/utils/user.dart'; 
+import 'package:sukio_member/utils/user.dart';
+import 'package:url_launcher/url_launcher.dart'; 
 
 class App extends StatefulWidget {
   const App({ Key? key }) : super(key: key);
@@ -35,10 +36,11 @@ class _AppState extends State<App> {
   bool isCheckIn = false;
   String title = '';
   String membershipId = '';
+  String defaultProfileImage = 'defaultprofile.png'; 
 
   @override
   void initState() {
-    super.initState(); 
+    super.initState();  
     OneSignal.Debug.setLogLevel(OSLogLevel.verbose); 
     OneSignal.Debug.setAlertLevel(OSLogLevel.none);
     OneSignal.consentRequired(false); 
@@ -73,9 +75,10 @@ class _AppState extends State<App> {
   } 
 
   userData() async { 
-    Map<String, String?> userData = await GetUser.getUser(); 
+    Map<String, String?> userData = await User.getUser(); 
     setState(() {
       user =  userData;
+      defaultProfileImage = user['profilePicture'].toString();
     });
   }
 
@@ -141,8 +144,7 @@ class _AppState extends State<App> {
         setState(() { isCheckIn = false; });
       }
     }
-  } 
-
+  }
   String _message = '';
   void _updateMessage(String message) {
     setState(() {
@@ -234,30 +236,31 @@ class _AppState extends State<App> {
                       child: Row(
                         children: [
                           TextButton(
-                            onPressed: () async { 
-                              FilePickerResult? result = await FilePicker.platform.pickFiles();
-                              if (result != null) { 
+                            onPressed: () async {
+                              FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                type: FileType.image,
+                              );
+                              if (result != null) {
                                 var url = Uri.parse('https://ww2.selfiesmile.app/members/uploadProfile');
                                 var request = http.MultipartRequest('POST', url)
                                   ..files.add(await http.MultipartFile.fromPath('file', result.files.single.path!));
+                                  request.fields['member_id'] = user['authId'].toString();  
 
                                 var streamedResponse = await request.send();
                                 var response = await http.Response.fromStream(streamedResponse); 
                                 var responseData = json.decode(response.body);
-                                
+
                                 if (response.statusCode == 200) {
-                                  print(responseData);
-                                  print('File uploaded successfully');
-                                } else {
-                                  print('File upload failed with status code ${response.statusCode}'); 
-                                  print('Error response: $responseData');
+                                  setState(() { 
+                                    defaultProfileImage = responseData['img'].toString(); 
+                                  });
                                 }
                               }
-                            }, 
+                            },
                             child: CircleAvatar(
-                              radius: 30,
-                               backgroundImage: NetworkImage(
-                                'https://ww2.selfiesmile.app/img/profiles/${user['profilePicture']}',
+                              radius: 30, 
+                              backgroundImage: NetworkImage(
+                                'https://ww2.selfiesmile.app/img/profiles/$defaultProfileImage',
                               ),
                             ),
                           ),
@@ -337,9 +340,8 @@ class _AppState extends State<App> {
               ListTile(
                 leading: const Icon(Icons.logout),
                 title: const Text('Logout'),
-                onTap: () async { 
-                  RemoveUser user = RemoveUser();
-                  await user.removeUser();
+                onTap: () async {
+                  await User.removeUser(); 
                   Navigator.push(context,
                     MaterialPageRoute(
                       builder: (context) => const Login(),
@@ -347,6 +349,15 @@ class _AppState extends State<App> {
                   );
                 },
               ),
+              ListTile(
+                leading: const Icon(Icons.delete),
+                title: const Text('Delete Account'),
+                onTap: () async {
+                  launchUrl(Uri.parse('https://www.itfs.org.sg/sukio/delete/'));
+                },
+              ),
+              const SizedBox(height: 270),
+              const Text('App v8.0', textAlign: TextAlign.center, style: TextStyle(color: Colors.blueGrey))
             ],
           ),
         ),

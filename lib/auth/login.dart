@@ -1,9 +1,13 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sukio_member/app.dart';
 import 'dart:convert'; 
 import 'package:sukio_member/auth/loginOTP.dart';
 import 'package:sukio_member/auth/register.dart';
@@ -11,16 +15,15 @@ import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_darwin/local_auth_darwin.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
-
-
+import 'package:sukio_member/auth/uploadProfilePict.dart';
+import 'package:sukio_member/utils/user.dart'; 
 
 class Login extends StatefulWidget {
   const Login({ Key? key }) : super(key: key);
 
   @override
   _LoginState createState() => _LoginState();
-} 
-
+}
 
 class _LoginState extends State<Login> {
   final LocalAuthentication _biometricAuth = LocalAuthentication();
@@ -31,10 +34,20 @@ class _LoginState extends State<Login> {
   String phoneNotFoundErr = '';
   String notApprove = '';
   bool noError = false;
+  bool biometricAvailable = false;
 
   @override
   void initState() {
-    super.initState();  
+    super.initState();
+    alreadyLoggedOnce();
+  }
+
+  alreadyLoggedOnce() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool hasBiometricId = prefs.containsKey('biometricId');
+    if (hasBiometricId) {
+      setState(() { biometricAvailable = true; });
+    }
   }
 
   @override
@@ -107,55 +120,183 @@ class _LoginState extends State<Login> {
                         'Enter your registered phone number to access your account.',
                         style: TextStyle(fontSize: 14, color: Colors.white70, height: 1.5),
                       ),
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.01), 
-                      TextFormField(
-                        controller: phoneNumberController,
-                        onFieldSubmitted: (phoneNumber) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('+${country.phoneCode}$phoneNumber'),
-                            ),
-                          ); 
-                        },
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        decoration: InputDecoration(  
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          hintText: "Phone number",
-                          prefixIcon: GestureDetector(
-                            onTap: () {
-                              showCountryPicker(
-                                context: context,
-                                countryListTheme: const CountryListThemeData(bottomSheetHeight: 600),
-                                onSelect: (country) {
-                                  setState(() {
-                                    this.country = country;
-                                  });
-                                },
-                              );
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                      Stack(
+                        children: [ 
+                          TextFormField(
+                            controller: phoneNumberController,
+                            onFieldSubmitted: (phoneNumber) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('+${country.phoneCode}$phoneNumber'),
+                                ),
+                              ); 
                             },
-                            child:Container(
-                              padding: const EdgeInsets.only(left: 10, right: 15),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    '${country.flagEmoji} +${country.phoneCode}',
-                                    style: const TextStyle(fontSize: 18, color: Colors.black, fontWeight: FontWeight.bold),
-                                    textAlign: TextAlign.start,
-                                  ),
-                                ],
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            decoration: InputDecoration(  
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                            )
+                              hintText: "Phone number",
+                              prefixIcon: GestureDetector(
+                                onTap: () {
+                                  showCountryPicker(
+                                    context: context,
+                                    countryListTheme: const CountryListThemeData(bottomSheetHeight: 600),
+                                    onSelect: (country) {
+                                      setState(() {
+                                        this.country = country;
+                                      });
+                                    },
+                                  );
+                                },
+                                child:Container(
+                                  padding: const EdgeInsets.only(left: 10, right: 15),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        '${country.flagEmoji} +${country.phoneCode}',
+                                        style: const TextStyle(fontSize: 18, color: Colors.black, fontWeight: FontWeight.bold),
+                                        textAlign: TextAlign.start,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ), 
+                              errorStyle: TextStyle(color: Colors.red.shade200), 
+                            ), 
                           ), 
-                          errorStyle: TextStyle(color: Colors.red.shade200), 
-                        ), 
+                          Visibility(
+                            visible: biometricAvailable,
+                            child: Positioned(
+                              right: -10,
+                              top: 7,
+                              child: TextButton(
+                                onPressed: () async {
+                                  final bool canAuthenticateWithBiometrics = await _biometricAuth.canCheckBiometrics;
+                                  final bool canAuthenticate = canAuthenticateWithBiometrics || await _biometricAuth.isDeviceSupported(); 
+                                  if (canAuthenticate) {
+                                    try {
+                                      final bool didAuthenticate = await _biometricAuth.authenticate(
+                                        localizedReason: 'Please authenticate to show account balance',
+                                        authMessages: const <AuthMessages>[
+                                          AndroidAuthMessages(
+                                            signInTitle: 'Oops! Biometric authentication required!',
+                                            cancelButton: 'No thanks',
+                                          ),
+                                          IOSAuthMessages(
+                                            cancelButton: 'No thanks',
+                                          ),
+                                        ],
+                                        options: const AuthenticationOptions()
+                                      );
+                                      if (didAuthenticate.toString() == 'true') {
+                                        SharedPreferences prefs = await SharedPreferences.getInstance(); 
+                                        bool hasBiometricId = prefs.containsKey('biometricId');
+                                        if (hasBiometricId) {
+                                          String id =  prefs.getString('biometricId').toString();
+                                          final response = await http.post(
+                                            Uri.parse("https://ww2.selfiesmile.app/members/auth"),
+                                            body: {'member_id': id},
+                                          );
+                                          if (response.statusCode == 200) {
+                                            final Map<String, dynamic> res = json.decode(response.body);
+                            
+                                            if (res['status'].toString() == 'true') {
+                                              await User.setUser(
+                                                res['member_id'],
+                                                res['membership_id'],
+                                                res['first_name'],
+                                                res['last_name'],
+                                                res['email'],
+                                                res['country_code'],
+                                                res['phone_number'],
+                                                res['role'],
+                                                res['qr'],
+                                                res['group'],
+                                                res['profile_picture'],
+                                              );
+                                              if (res['profile_picture'].toString() == 'null') {
+                                                Navigator.pushReplacement(context,
+                                                  MaterialPageRoute(builder: (context) => const UploadProfilePict()),
+                                                );
+                                              } else {
+                                                Navigator.pushReplacement(context,
+                                                  MaterialPageRoute(builder: (context) => const App()),
+                                                );
+                                              }
+                                            }
+                                          } 
+                                        } else { 
+                                          AwesomeDialog(
+                                            context: context,
+                                            dialogType: DialogType.warning,
+                                            animType: AnimType.topSlide,
+                                            dismissOnTouchOutside: false,
+                                            title: 'Error',
+                                            desc: 'You have to log-in once to enabled face recognition',
+                                            btnOkOnPress: () async { },
+                                            btnOkColor: Colors.amber
+                                          ).show();
+                                        } 
+                                      }
+                                    } on PlatformException catch (e) {
+                                      if (e.code == auth_error.notEnrolled) {
+                                        AwesomeDialog(
+                                          context: context,
+                                          dialogType: DialogType.warning,
+                                          animType: AnimType.topSlide,
+                                          dismissOnTouchOutside: false, 
+                                          desc: 'Biometric authentication is not enrolled on this device.',
+                                          btnOkOnPress: () async { },
+                                          btnOkColor: Colors.amber
+                                        ).show();  
+                                      } else if (e.code == auth_error.lockedOut || e.code == auth_error.permanentlyLockedOut) {
+                                        AwesomeDialog(
+                                          context: context,
+                                          dialogType: DialogType.warning,
+                                          animType: AnimType.topSlide,
+                                          dismissOnTouchOutside: false, 
+                                          desc: 'Biometric authentication is locked out. Please try again later.',
+                                          btnOkOnPress: () async { },
+                                          btnOkColor: Colors.amber
+                                        ).show();   
+                                      } else {
+                                        AwesomeDialog(
+                                          context: context,
+                                          dialogType: DialogType.warning,
+                                          animType: AnimType.topSlide,
+                                          dismissOnTouchOutside: false, 
+                                          desc: 'An unexpected error occurred during biometric authentication.',
+                                          btnOkOnPress: () async { },
+                                          btnOkColor: Colors.amber
+                                        ).show();  
+                                      }
+                                    } 
+                                  } else {
+                                    AwesomeDialog(
+                                      context: context,
+                                      dialogType: DialogType.warning,
+                                      animType: AnimType.topSlide,
+                                      dismissOnTouchOutside: false,
+                                      title: 'Not Supported',
+                                      desc: 'Your device does not support biometrics.',
+                                      btnOkOnPress: () async { },
+                                      btnOkColor: Colors.amber
+                                    ).show();
+                                  }
+                                },
+                                child: const Icon(Icons.fingerprint, color: Colors.blueAccent, size: 30),
+                              )
+                            ),
+                          ),
+                        ],
                       ), 
                       Visibility(
                         visible: emptyPhonErr.isNotEmpty,
@@ -272,59 +413,7 @@ class _LoginState extends State<Login> {
                             ),
                           ),
                         ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          final bool canAuthenticateWithBiometrics = await _biometricAuth.canCheckBiometrics;
-                            print(canAuthenticateWithBiometrics);
-                            final bool canAuthenticate = canAuthenticateWithBiometrics || await _biometricAuth.isDeviceSupported();
-                            print(canAuthenticate);
-                            final List<BiometricType> availableBiometrics = await _biometricAuth.getAvailableBiometrics();
-                            print(availableBiometrics);
-                            final bool didAuthenticate = await _biometricAuth.authenticate(
-                              localizedReason: 'Please authenticate to show account balance',
-                              authMessages: const <AuthMessages>[
-                                AndroidAuthMessages(
-                                  signInTitle: 'Oops! Biometric authentication required!',
-                                  cancelButton: 'No thanks',
-                                ),
-                                IOSAuthMessages(
-                                  cancelButton: 'No thanks',
-                                ),
-                              ],
-                              options: const AuthenticationOptions()
-                            );
-                            print(didAuthenticate);
-                            try {
-                              print("<!-- THIS IS CALLED");
-                              final bool didAuthenticate = await _biometricAuth.authenticate(
-                                  localizedReason: 'Please authenticate to show account balance',
-                                  authMessages: const <AuthMessages>[
-                                    AndroidAuthMessages(
-                                      signInTitle: 'Oops! Biometric authentication required!',
-                                      cancelButton: 'No thanks',
-                                    ),
-                                    IOSAuthMessages(
-                                      cancelButton: 'No thanks',
-                                    ),
-                                  ],
-                                  options: const AuthenticationOptions());
-                              print(didAuthenticate); 
-                            } on PlatformException catch (e) {
-                              if (e.code == auth_error.notEnrolled) {
-                                print("<!-- THIS IS ERROR 1");
-                                // Add handling of no hardware here.
-                              } else if (e.code == auth_error.lockedOut || e.code == auth_error.permanentlyLockedOut) {
-                                print("<!-- THIS IS ERROR 2");
-                                // ...
-                              } else {
-                                print("<!-- THIS IS ERROR 3");
-                                // ...
-                              }
-                            }
-                        }, 
-                        child: const Text('Face Id')
-                      )
+                      ), 
                     ],
                   ),
                 ),

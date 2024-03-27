@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use, unnecessary_constructor_name
+
 import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -6,6 +8,7 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'package:sukio_member/app.dart';
+import 'package:sukio_member/auth/uploadProfilePict.dart';
 import 'package:sukio_member/utils/user.dart';
 
 class LoginOTP extends StatefulWidget {
@@ -204,7 +207,7 @@ class _LoginOTPState extends State<LoginOTP> {
                                   invalidPassCode = res['message'];
                                 });
                               } else {  
-                                SetUser user = SetUser(
+                                await User.setUser(
                                   res['member_id'],
                                   res['membership_id'],
                                   res['first_name'],
@@ -217,11 +220,17 @@ class _LoginOTPState extends State<LoginOTP> {
                                   res['group'],
                                   res['profile_picture'],
                                 );
-                                await user.setUser();
-
-                                Navigator.pushReplacement(context,
-                                  MaterialPageRoute(builder: (context) => const App()),
-                                );
+                                await User.enrollBiometricId(res['member_id']);
+              
+                                if (res['profile_picture'].toString() == 'null') {
+                                  Navigator.pushReplacement(context,
+                                    MaterialPageRoute(builder: (context) => const UploadProfilePict()),
+                                  );
+                                } else {
+                                  Navigator.pushReplacement(context,
+                                    MaterialPageRoute(builder: (context) => const App()),
+                                  );
+                                }
                               }
                             setState(() {   noError = false; });
                           } else {

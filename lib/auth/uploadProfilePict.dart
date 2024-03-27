@@ -5,12 +5,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
-import 'package:sukio_member/auth/enrollFace.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sukio_member/app.dart'; 
 import 'package:sukio_member/auth/login.dart';
-import 'dart:convert';
-
+import 'dart:convert'; 
 import 'package:sukio_member/auth/register.dart';
-import 'package:sukio_member/utils/registerUser.dart';   
+import 'package:sukio_member/utils/registerUser.dart';
+import 'package:sukio_member/utils/user.dart';   
 
 class UploadProfilePict extends StatefulWidget {
   const UploadProfilePict({ Key? key }) : super(key: key);
@@ -20,13 +21,22 @@ class UploadProfilePict extends StatefulWidget {
 }
 
 class _UploadProfilePictState extends State<UploadProfilePict> {
+  Map<String, String?> user = {};
   String image = 'defaultprofile.png';
   bool isLoading = false;
-  bool hasImage = false; 
+  bool hasImage = false;  
 
   @override
   void initState() {
     super.initState(); 
+    userData();
+  }
+
+  userData() async {
+    Map<String, String?> userData = await User.getUser(); 
+    setState(() {
+      user =  userData;
+    });
   }
 
   @override
@@ -70,33 +80,37 @@ class _UploadProfilePictState extends State<UploadProfilePict> {
             ),
             const SizedBox(height: 15), 
             SizedBox(
-              width: 300,
+              width: 210,
               child: ElevatedButton(
-                 onPressed: () async { 
-                  String id = await RegisterUserData.getRegisterId();
+                onPressed: () async {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
                   FilePickerResult? result = await FilePicker.platform.pickFiles(
                     type: FileType.image,
                   );
-                  if (result != null) { 
+                  if (result != null) {
                     var url = Uri.parse('https://ww2.selfiesmile.app/members/uploadProfile');
                     var request = http.MultipartRequest('POST', url)
                       ..files.add(await http.MultipartFile.fromPath('file', result.files.single.path!));
-                      request.fields['request_id'] = id; 
+                      request.fields['member_id'] = user['authId'].toString();  
 
                     var streamedResponse = await request.send();
                     var response = await http.Response.fromStream(streamedResponse); 
                     var responseData = json.decode(response.body);
-                    
+
                     if (response.statusCode == 200) {
                       setState(() {
                         image = responseData['img'].toString();
                         hasImage = true;
-                      }); 
+                        prefs.setString('profilePicture', responseData['img'].toString());
+                      });
                     }
                   }
                 }, 
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white, 
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -120,7 +134,7 @@ class _UploadProfilePictState extends State<UploadProfilePict> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () async {
-                          await RegisterUserData().deleteRegisterData(); 
+                          await User.removeUser();
                           Navigator.push(context,
                             MaterialPageRoute(builder: (context) => const Login()),
                           );
@@ -148,8 +162,8 @@ class _UploadProfilePictState extends State<UploadProfilePict> {
                       child: Expanded(
                         child: ElevatedButton(
                           onPressed: () async { 
-                            Navigator.push(context,
-                              MaterialPageRoute(builder: (context) => const EnrollFace()),
+                            Navigator.pushReplacement(context,
+                              MaterialPageRoute(builder: (context) => const App()),
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -162,7 +176,7 @@ class _UploadProfilePictState extends State<UploadProfilePict> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                "Next",
+                                "Continue",
                                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
                               ),
                               const Visibility(

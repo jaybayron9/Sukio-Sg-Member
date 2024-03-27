@@ -3,12 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'package:sukio_member/auth/enrollFace.dart';
-import 'package:sukio_member/auth/uploadProfilePict.dart';
+import 'package:http/http.dart' as http; 
 import 'package:sukio_member/utils/user.dart';
-import 'dart:convert';  
-
+import 'dart:convert';
 import 'auth/login.dart';
 import 'app.dart'; 
 
@@ -67,7 +64,7 @@ class _MainState extends State<Main> {
     return prefs.getString('authId');
   }
 
-  Future<bool> auth(memberId) async { 
+  Future<bool> auth(memberId) async {
     final response = await http.post(
       Uri.parse("https://ww2.selfiesmile.app/members/auth"),
       body: {'member_id': memberId},
@@ -76,7 +73,7 @@ class _MainState extends State<Main> {
       final Map<String, dynamic> res = json.decode(response.body);
 
       if (res['status'].toString() == 'true') {
-        SetUser user = SetUser(
+        await User.setUser(
           res['member_id'],
           res['membership_id'],
           res['first_name'],
@@ -89,12 +86,11 @@ class _MainState extends State<Main> {
           res['group'],
           res['profile_picture'],
         );
-        await user.setUser();
+        await User.enrollBiometricId(res['member_id']);
 
         return true;
       } else {
-        RemoveUser user = RemoveUser();
-        user.removeUser();
+        User.removeUser(); 
       }
     }
     return false;
@@ -102,8 +98,6 @@ class _MainState extends State<Main> {
 
   @override
   Widget build(BuildContext context) {
-    return _isLoggedIn ? const App() : const Login();
-    // return const UploadProfilePict();
-    // return const EnrollFace();
+    return _isLoggedIn ? const App() : const Login(); 
   }
 } 
