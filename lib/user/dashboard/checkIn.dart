@@ -35,7 +35,7 @@ class _CheckInState extends State<CheckIn> {
 
   isNotCheckOut() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/members/isNotCheckOut'), body: {
+    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/member/notify/is/not/checkout'), body: {
       'member_id': prefs.getString('authId').toString()
     });
 
@@ -52,7 +52,7 @@ class _CheckInState extends State<CheckIn> {
 
   Future<List<Map<String, dynamic>>> fetchData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/memberLogs"), body: {
+    final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/logs"), body: {
       'member_id': prefs.getString('authId').toString(),
     });
 
@@ -78,7 +78,7 @@ class _CheckInState extends State<CheckIn> {
       qrdata.getScannedQrBarCode(
         context: context,
         onCode: (String? value) async { 
-          final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/attendance/inMember"), body: {
+          final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/in"), body: {
             'member_id': prefs.getString('authId').toString(), 
             'code': value, 
           });
@@ -132,7 +132,7 @@ class _CheckInState extends State<CheckIn> {
         qrdata.getScannedQrBarCode(
           context: context,
           onCode: (String? value) async {
-            final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/attendance/inMember"), body: {
+            final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/attendance/in"), body: {
               'member_id': prefs.getString('authId').toString(), 
               'code': value, 
             });
@@ -183,7 +183,7 @@ class _CheckInState extends State<CheckIn> {
 
   Future<void> refreshAttendance() async { 
     SharedPreferences prefs = await SharedPreferences.getInstance(); 
-    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/members/checkAttStat'), body: {
+    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/member/check/attendance/status'), body: {
       'member_id': prefs.getString('authId').toString()
     });
     if (response.statusCode == 200) {
@@ -204,14 +204,14 @@ class _CheckInState extends State<CheckIn> {
 
   triggerMasterCheckIn() async {
     SharedPreferences prefs = await SharedPreferences.getInstance(); 
-    await http.post(Uri.parse("https://ww2.selfiesmile.app/attendance/triggerCheckIn"), body: {
+    await http.post(Uri.parse("https://ww2.selfiesmile.app/member/trigger/in"), body: {
       "name": '${prefs.getString('firstName').toString()} ${prefs.getString('lastName').toString()}',
     });
   }
 
   getDateCheckIn() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/getCheckInDateTime"), body: {
+    final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/get/in/date/time"), body: {
       'member_id': prefs.getString('authId').toString(),
     }); 
     if (response.statusCode == 200) {

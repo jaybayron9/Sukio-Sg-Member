@@ -88,7 +88,7 @@ class _UploadProfilePictState extends State<UploadProfilePict> {
                     type: FileType.image,
                   );
                   if (result != null) {
-                    var url = Uri.parse('https://ww2.selfiesmile.app/members/uploadProfile');
+                    var url = Uri.parse('https://ww2.selfiesmile.app/member/upload/profile');
                     var request = http.MultipartRequest('POST', url)
                       ..files.add(await http.MultipartFile.fromPath('file', result.files.single.path!));
                       request.fields['member_id'] = user['authId'].toString();  

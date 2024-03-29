@@ -66,7 +66,7 @@ class _MainState extends State<Main> {
 
   Future<bool> auth(memberId) async {
     final response = await http.post(
-      Uri.parse("https://ww2.selfiesmile.app/members/auth"),
+      Uri.parse("https://ww2.selfiesmile.app/member/auth"),
       body: {'member_id': memberId},
     );
     if (response.statusCode == 200) {

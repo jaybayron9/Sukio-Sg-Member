@@ -60,7 +60,7 @@ class _LoginOTPState extends State<LoginOTP> {
   bool isResendSuccess = false;
 
   Future<bool> resendOTP() async {
-    final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/sendOTP"), body: {
+    final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/resendOTP"), body: {
       'phone_number': widget.phoneNumber,
       'country_code': widget.countryCode,
     });
@@ -195,7 +195,7 @@ class _LoginOTPState extends State<LoginOTP> {
                         onPressed: () async {  
                           setState(() { noError = true; });
                           noError = true; 
-                          final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/login"), body: {
+                          final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/otp"), body: {
                             'phone_number': widget.phoneNumber,
                             'country_code': widget.countryCode,
                             'otp_code': _code,

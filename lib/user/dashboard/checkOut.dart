@@ -38,12 +38,12 @@ class _CheckOutState extends State<CheckOut> {
   userSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final response = await http.post(
-      Uri.parse('https://ww2.selfiesmile.app/settings/userSettings'),
+      Uri.parse('https://ww2.selfiesmile.app/member/settings'),
       body: {'member_id': prefs.getString('authId').toString()}
     ); 
     if (response.statusCode == 200) {
       final Map<String, dynamic> responseData = json.decode(response.body);  
-      if (responseData['status'].toString() == 'true') { 
+      if (responseData['status'].toString() == 'true') {
         setState(() {
           hasCheckOut = responseData['check_out_request'].toString() == '1' ? true : false;  
         });
@@ -53,7 +53,7 @@ class _CheckOutState extends State<CheckOut> {
 
   Future<void> refreshAttendance() async { 
     SharedPreferences prefs = await SharedPreferences.getInstance(); 
-    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/members/checkAttStat'), body: {
+    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/member/check/attendance/status'), body: {
       'member_id': prefs.getString('authId').toString()
     });
     if (response.statusCode == 200) {
@@ -79,7 +79,7 @@ class _CheckOutState extends State<CheckOut> {
       qrdata.getScannedQrBarCode(
         context: context,
         onCode: (String? value) async { 
-          final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/attendance/inMember"), body: {
+          final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/in"), body: {
             'member_id': prefs.getString('authId').toString(), 
             'code': value, 
           });
@@ -133,7 +133,7 @@ class _CheckOutState extends State<CheckOut> {
         qrdata.getScannedQrBarCode(
           context: context,
           onCode: (String? value) async {
-            final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/attendance/inMember"), body: {
+            final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/in"), body: {
               'member_id': prefs.getString('authId').toString(), 
               'code': value, 
             });
@@ -185,7 +185,7 @@ class _CheckOutState extends State<CheckOut> {
   requestCheckOut() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final response = await http.post(
-      Uri.parse('https://ww2.selfiesmile.app/attendance/requestOut'),
+      Uri.parse('https://ww2.selfiesmile.app/member/request/out'),
       body: {'member_id': prefs.getString('authId').toString()},
     ); 
     if (response.statusCode == 200) {
@@ -198,14 +198,14 @@ class _CheckOutState extends State<CheckOut> {
 
   triggerMasterCheckIn() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await http.post(Uri.parse("https://ww2.selfiesmile.app/attendance/triggerCheckIn"), body: {
+    await http.post(Uri.parse("https://ww2.selfiesmile.app/member/trigger/in"), body: {
       "name": '${prefs.getString('firstName').toString()} ${prefs.getString('lastName').toString()}',
     });
   }
 
   getDateCheckIn() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/getCheckInDateTime"), body: {
+    final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/get/in/date/time"), body: {
       'member_id': prefs.getString('authId').toString(),
     }); 
     if (response.statusCode == 200) {
@@ -221,7 +221,7 @@ class _CheckOutState extends State<CheckOut> {
 
   Future<List<Map<String, dynamic>>> fetchData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/memberLogs"), body: {
+    final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/logs"), body: {
       'member_id': prefs.getString('authId').toString(),
     }); 
     if (response.statusCode == 200) {

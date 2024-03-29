@@ -40,7 +40,7 @@ class _VerifyPhoneState extends State<VerifyPhone> {
     registeredData();
   }
 
-  registeredData() async { 
+  registeredData() async {
     Map<String, String?> userData = await RegisterUserData.getUser(); 
     setState(() {
       user =  userData;
@@ -177,7 +177,7 @@ class _VerifyPhoneState extends State<VerifyPhone> {
                       onPressed: () async { 
                         setState(() { noError = true; });    
                         final response = await http.post(
-                          Uri.parse("https://ww2.selfiesmile.app/members/verifyPhone"),
+                          Uri.parse("https://ww2.selfiesmile.app/member/verify/phone"),
                           body: { 
                             'first_name': user['firstName'],
                             'last_name': user['lastName'],
@@ -214,14 +214,14 @@ class _VerifyPhoneState extends State<VerifyPhone> {
                                 OneSignal.initialize('df33667d-80b5-4062-9ccb-2325537fa02e');  
                                 OneSignal.Notifications.clearAll(); 
                                 OneSignal.User.pushSubscription.addObserver((state) async { 
-                                  await http.post(Uri.parse('https://ww2.selfiesmile.app/members/allowNotification'), body: { 
+                                  await http.post(Uri.parse('https://ww2.selfiesmile.app/member/notify/approval'), body: { 
                                     'country_code': user['countryCode'],
                                     'phone_number': user['phoneNumber'],
                                     'subscription_id': OneSignal.User.pushSubscription.id.toString()
                                   });
                                 });
                                 OneSignal.Notifications.addPermissionObserver((state) async { 
-                                  await http.post(Uri.parse('https://ww2.selfiesmile.app/members/allowNotification'), body: { 
+                                  await http.post(Uri.parse('https://ww2.selfiesmile.app/member/notify/approval'), body: { 
                                     'country_code': user['countryCode'],
                                     'phone_number': user['phoneNumber'],
                                     'subscription_id': OneSignal.User.pushSubscription.id.toString()

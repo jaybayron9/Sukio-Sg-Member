@@ -202,7 +202,7 @@ class _LoginState extends State<Login> {
                                         if (hasBiometricId) {
                                           String id =  prefs.getString('biometricId').toString();
                                           final response = await http.post(
-                                            Uri.parse("https://ww2.selfiesmile.app/members/auth"),
+                                            Uri.parse("https://ww2.selfiesmile.app/member/auth"),
                                             body: {'member_id': id},
                                           );
                                           if (response.statusCode == 200) {
@@ -326,7 +326,7 @@ class _LoginState extends State<Login> {
                         child: ElevatedButton(
                           onPressed: () async { 
                             setState(() { noError = true; });
-                            final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/members/login"), body: {
+                            final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/login"), body: {
                               'phone_number': phoneNumberController.text,
                               'country_code': country.phoneCode,
                             });  

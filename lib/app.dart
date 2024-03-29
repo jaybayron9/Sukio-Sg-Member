@@ -4,8 +4,7 @@ import 'dart:async';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart'; 
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sukio_member/auth/login.dart';
@@ -48,13 +47,13 @@ class _AppState extends State<App> {
     OneSignal.Notifications.clearAll(); 
     OneSignal.User.pushSubscription.addObserver((state) async { 
       SharedPreferences prefs = await SharedPreferences.getInstance(); 
-      await http.post(Uri.parse('https://ww2.selfiesmile.app/members/saveSubscriptionId'), body: { 
+      await http.post(Uri.parse('https://ww2.selfiesmile.app/member/save/subscription/id'), body: { 
         'member_id': prefs.getString('authId').toString(), 'subscription_id': OneSignal.User.pushSubscription.id.toString()
       }); 
     }); 
     OneSignal.Notifications.addPermissionObserver((state) async { 
       SharedPreferences prefs = await SharedPreferences.getInstance(); 
-      await http.post(Uri.parse('https://ww2.selfiesmile.app/members/saveSubscriptionId'), body: { 
+      await http.post(Uri.parse('https://ww2.selfiesmile.app/member/save/subscription/id'), body: { 
         'member_id': prefs.getString('authId').toString(), 'subscription_id': OneSignal.User.pushSubscription.id.toString()
       }); 
     }); 
@@ -69,7 +68,7 @@ class _AppState extends State<App> {
       isNotCheckOut();
     });
     checkAccountStatus();
-    isNotCheckOut(); 
+    // isNotCheckOut(); 
     userData();
     websocket(); 
   } 
@@ -100,7 +99,7 @@ class _AppState extends State<App> {
 
   Future<void> checkAccountStatus() async { 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/members/checkAccountStatus'), body: {
+    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/member/check/acct/stats'), body: {
       'member_id': prefs.getString('authId').toString()
     });
     if (response.statusCode == 200) {
@@ -133,7 +132,7 @@ class _AppState extends State<App> {
 
   isNotCheckOut() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/members/isNotCheckOut'), body: {
+    final response = await http.post(Uri.parse('https://ww2.selfiesmile.app/member/notify/is/not/checkout'), body: {
       'member_id': prefs.getString('authId').toString()
     }); 
     if (response.statusCode == 200) {
@@ -241,7 +240,7 @@ class _AppState extends State<App> {
                                 type: FileType.image,
                               );
                               if (result != null) {
-                                var url = Uri.parse('https://ww2.selfiesmile.app/members/uploadProfile');
+                                var url = Uri.parse('https://ww2.selfiesmile.app/member/upload/profile');
                                 var request = http.MultipartRequest('POST', url)
                                   ..files.add(await http.MultipartFile.fromPath('file', result.files.single.path!));
                                   request.fields['member_id'] = user['authId'].toString();  

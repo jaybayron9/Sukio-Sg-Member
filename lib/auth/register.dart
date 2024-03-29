@@ -364,7 +364,7 @@ class _RegisterState extends State<Register> {
                         onPressed: () async { 
                           setState(() { noError = true; });
                           try {
-                            final response = await http.post( Uri.parse("https://ww2.selfiesmile.app/members/register"), body: {
+                            final response = await http.post( Uri.parse("https://ww2.selfiesmile.app/member/register"), body: {
                               'first_name': firstNameController.text,
                               'last_name': lastNameController.text,
                               'phone_number': phoneNumberController.text,
