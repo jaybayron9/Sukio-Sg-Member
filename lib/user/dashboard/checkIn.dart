@@ -1,7 +1,9 @@
 // ignore_for_file: use_build_context_synchronously, unused_field
 
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:flutter/material.dart'; 
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart'; 
 import 'package:http/http.dart' as http; 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
@@ -26,11 +28,13 @@ class _CheckInState extends State<CheckIn> {
   String timeIn = '';
   String _debugLabelString = '';
   List<Map<String, dynamic>> memberLogsData = [];
+  bool hasData = false;
 
   @override
   void initState() {
     super.initState(); 
     isNotCheckOut(); 
+    hasChecked();
   }  
 
   isNotCheckOut() async {
@@ -47,6 +51,22 @@ class _CheckInState extends State<CheckIn> {
       } else {
         setState(() { isCheckIn = true; });
       }
+    }
+  }
+
+  hasChecked() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/logs"), body: {
+      'member_id': prefs.getString('authId').toString(),
+    });
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonResponse = json.decode(response.body);
+      if (jsonResponse.isEmpty) {
+        setState(() { hasData = true; });
+      }
+    } else {
+      throw Exception('Failed to load data');
     }
   }
 
@@ -229,24 +249,7 @@ class _CheckInState extends State<CheckIn> {
   Widget build(BuildContext context) {
     return WillPopScope.new(
       onWillPop: () async {
-        return (await showDialog(
-          context: context,
-          builder: (context) => AlertDialog( 
-            title: const Text('Are you sure?'),
-            content: const Text('Do you want to exit an App'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('No'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Yes'),
-              ),
-            ],
-          ),
-        )) ??
-        false;
+        return false;
       },
       child: Scaffold(
         body: Container(
@@ -381,6 +384,7 @@ class _CheckInState extends State<CheckIn> {
               ),
               Expanded(
                 child: Container(
+                  height: double.infinity,
                   decoration: const BoxDecoration(
                     borderRadius: BorderRadius.vertical(top: Radius.circular(30.0)),
                     color: Colors.white,
@@ -393,45 +397,66 @@ class _CheckInState extends State<CheckIn> {
                     ],
                   ),
                   width: double.infinity,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: FutureBuilder<List<Map<String, dynamic>>>(
-                      future: fetchData(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return SizedBox(
-                            height: 400,
-                            child: Center(
-                              child: CircularProgressIndicator(color: Colors.blue.shade500),
-                            ),
-                          );
-                        }
-        
-                        return DataTable(
-                          decoration: const BoxDecoration(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(30.0)),
+                  child: Stack(
+                    children: [
+                      Container(
+                        alignment: Alignment.topCenter,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: FutureBuilder<List<Map<String, dynamic>>>(
+                            future: fetchData(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return SizedBox(
+                                  height: 400,
+                                  child: Center(
+                                    child: CircularProgressIndicator(color: Colors.blue.shade500),
+                                  ),
+                                );
+                              }
+                              
+                              return DataTable(
+                                decoration: const BoxDecoration(
+                                  borderRadius: BorderRadius.vertical(top: Radius.circular(30.0)),
+                                ),
+                                columns: const [
+                                  DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold))),
+                                  DataColumn(label: Text('IN', style: TextStyle(fontWeight: FontWeight.bold))),
+                                  DataColumn(label: Text('OUT', style: TextStyle(fontWeight: FontWeight.bold))),
+                                  DataColumn(label: Text('DATE', style: TextStyle(fontWeight: FontWeight.bold))),
+                                ],
+                                rows: snapshot.data!.asMap().entries.map<DataRow>((entry) {
+                                  final record = entry.value;
+                          
+                                  return DataRow(
+                                    cells: [
+                                      DataCell(Text(record['id'].toString() == '0' ? '---' : record['id'])),
+                                      DataCell(Text(record['check_in'].toString() == 'null' ? '---' : record['check_in'])),
+                                      DataCell(Text(record['check_out'].toString() == 'null' ? '---' : record['check_out'])),
+                                      DataCell(Text(record['date'].toString() == 'null' ? '---' : record['date']))
+                                    ],
+                                  );
+                                }).toList(),
+                              ); 
+                            },
                           ),
-                          columns: const [
-                            DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataColumn(label: Text('IN', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataColumn(label: Text('OUT', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataColumn(label: Text('DATE', style: TextStyle(fontWeight: FontWeight.bold))),
-                          ],
-                          rows: snapshot.data!.asMap().entries.map<DataRow>((entry) {
-                            final record = entry.value;
-        
-                            return DataRow(
-                              cells: [
-                                DataCell(Text(record['id'].toString() == '0' ? '---' : record['id'])),
-                                DataCell(Text(record['check_in'].toString() == 'null' ? '---' : record['check_in'])),
-                                DataCell(Text(record['check_out'].toString() == 'null' ? '---' : record['check_out'])),
-                                DataCell(Text(record['date'].toString() == 'null' ? '---' : record['date']))
-                              ],
-                            );
-                          }).toList(),
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: hasData,
+                        child: const Center(
+                          child: Positioned( 
+                            top: 100,
+                            left: 100,
+                            right: 100,
+                            child: Visibility(
+                              visible: true,
+                              child: Text('No Available Data', style: TextStyle(color: Colors.black),)
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               )

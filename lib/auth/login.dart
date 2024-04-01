@@ -148,6 +148,7 @@ class _LoginState extends State<Login> {
                                   showCountryPicker(
                                     context: context,
                                     countryListTheme: const CountryListThemeData(bottomSheetHeight: 600),
+                                    showSearch: false,
                                     onSelect: (country) {
                                       setState(() {
                                         this.country = country;
@@ -317,7 +318,7 @@ class _LoginState extends State<Login> {
                         child: Container(
                           margin: const EdgeInsets.only(left: 15),
                           child: Text(notApprove, style: TextStyle(color: Colors.red.shade200))
-                        )     
+                        )
                       ),
                       SizedBox(height: MediaQuery.of(context).size.height * 0.016), 
                       SizedBox(

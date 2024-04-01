@@ -1,15 +1,20 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sukio_member/utils/user.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';  
+import 'dart:convert';
+
+import 'package:toggle_switch/toggle_switch.dart';  
 
 class Events extends StatefulWidget {
   const Events({ Key? key }) : super(key: key);
@@ -19,20 +24,32 @@ class Events extends StatefulWidget {
 }
 
 class _EventsState extends State<Events> {
+  Map<String, String?> user = {};
   CalendarFormat _calendarFormat = CalendarFormat.month; 
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
   List<GroupEvent> events = [];
   List<GroupEvent> filteredEvents = [];
   bool isCreateBooking = false;
+  bool isSubmit = false; 
   String selectedBookDate = '';
   String selectedBookTime = '00:00 AM';
-  bool isSubmit = false;
+  final TextEditingController bookingTitle = TextEditingController();
+  final TextEditingController bookingMessage = TextEditingController();
+  String groupType = ''; 
+  TimeOfDay currentTime = TimeOfDay.now();
+  String filterGroup = '';
 
   @override
   void initState() {
     super.initState();
+    userData();
     websocket();
+  }
+
+  userData() async { 
+    Map<String, String?> userData = await User.getUser(); 
+    setState(() { user =  userData; });
   }
 
   websocket() async {
@@ -85,9 +102,9 @@ class _EventsState extends State<Events> {
       body: Stack(
         children: [
           Column(
-            children: [ 
+            children: [  
               Container(
-                margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -101,50 +118,73 @@ class _EventsState extends State<Events> {
                     ),
                   ],
                 ),
-                child: TableCalendar(
-                  calendarFormat: _calendarFormat,
-                  firstDay: DateTime.utc(2010, 10, 16),
-                  lastDay: DateTime.utc(2030, 3, 14),
-                  focusedDay: _focusedDay,
-                  onFormatChanged: (format) { 
-                    setState(() {
-                      _calendarFormat = format;
-                    });
-                  },
-                  selectedDayPredicate: (day) {
-                    return isSameDay(_selectedDay, day);
-                  },
-                  onDaySelected: (selectedDay, focusedDay) {
-                    setState(() {
-                      _selectedDay = selectedDay; 
-                      filteredEvents = events.where((event) => isSameDay(event.date, selectedDay)).toList();
-                    });
-                  },
-                  onPageChanged: (focusedDay) {
-                    setState(() {
-                      _focusedDay = focusedDay;
-                    });
-                  },
-                  calendarBuilders: CalendarBuilders(
-                    defaultBuilder: (context, date, events) {
-                      bool hasEvents = _hasEventsForDay(date);
-                      return Container(
-                        margin: const EdgeInsets.all(4.0),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: hasEvents ? Colors.blue : Colors.transparent,
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${date.day}',
-                            style: TextStyle(
-                              color: hasEvents ? Colors.white : Colors.black,
+                child: Column(
+                  children: [
+                    ToggleSwitch(
+                      initialLabelIndex: 0, 
+                      minWidth: 150.0,
+                      activeBgColor: [Colors.blue.shade900],
+                      activeFgColor: Colors.white,
+                      customTextStyles: const [
+                        TextStyle(
+                          color: Colors.white,
+                          fontSize: 15.0
+                        )
+                      ],
+                      multiLineText: true,
+                      centerText: true,
+                      totalSwitches: 2,
+                      labels: ['All Group', 'My Group (${user['group']})'],
+                      onToggle: (index) {
+                        filterGroup = index.toString();
+                      },
+                    ),
+                    TableCalendar(
+                      calendarFormat: _calendarFormat,
+                      firstDay: DateTime.utc(2010, 10, 16),
+                      lastDay: DateTime.utc(2030, 3, 14),
+                      focusedDay: _focusedDay,
+                      onFormatChanged: (format) { 
+                        setState(() {
+                          _calendarFormat = format;
+                        });
+                      },
+                      selectedDayPredicate: (day) {
+                        return isSameDay(_selectedDay, day);
+                      },
+                      onDaySelected: (selectedDay, focusedDay) {
+                        setState(() {
+                          _selectedDay = selectedDay; 
+                          filteredEvents = events.where((event) => isSameDay(event.date, selectedDay)).toList();
+                        });
+                      },
+                      onPageChanged: (focusedDay) {
+                        setState(() {
+                          _focusedDay = focusedDay;
+                        });
+                      },
+                      calendarBuilders: CalendarBuilders(
+                        defaultBuilder: (context, date, events) {
+                          bool hasEvents = _hasEventsForDay(date);
+                          return Container(
+                            margin: const EdgeInsets.all(4.0),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: hasEvents ? Colors.blue : Colors.transparent,
                             ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                            child: Center(
+                              child: Text(
+                                '${date.day}',
+                                style: TextStyle(
+                                  color: hasEvents ? Colors.white : Colors.black,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ), 
               // Events description
@@ -165,7 +205,6 @@ class _EventsState extends State<Events> {
                     ),
                   )
                   : Container(
-                      padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 20),  
                       decoration: BoxDecoration( 
                         color: Colors.blue.shade900,
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(30.0)),
@@ -174,43 +213,97 @@ class _EventsState extends State<Events> {
                         itemCount: filteredEvents.length,
                         itemBuilder: (context, index) {
                           GroupEvent event = filteredEvents[index];
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            decoration: BoxDecoration(
-                              color: event.eventColor,
-                              borderRadius: const BorderRadius.all(Radius.circular(10.0))
-                            ),
-                            child: ExpansionTile(
-                              backgroundColor: event.eventColor, 
-                              title: Text(
-                                event.eventTitle,
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                          return Stack(
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(top: 25, bottom: 0, left: 30, right: 30),  
+                                decoration: BoxDecoration(
+                                  color: event.eventColor,
+                                  borderRadius: const BorderRadius.all(Radius.circular(10.0))
+                                ),
+                                child: ExpansionTile(
+                                  backgroundColor: event.eventColor, 
+                                  title: Text(
+                                    event.eventTitle,
+                                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text('Date: ', style: TextStyle(color: Colors.white)),
-                                      Text('${event.eventDate} ',
-                                          style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
-                                      const Text('Time: ', style: TextStyle(color: Colors.white),),
-                                      Text('${event.time} ', style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                                      Row(
+                                        children: [
+                                          const Text('Date: ', style: TextStyle(color: Colors.white)),
+                                          Text('${event.eventDate} ', style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                                          const Text('Time: ', style: TextStyle(color: Colors.white),),
+                                          Text('${event.time} ', style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                                        ],
+                                      ), 
                                     ],
                                   ), 
-                                ],
-                              ), 
-                              collapsedIconColor: Colors.white,  
-                              iconColor: Colors.white,  
-                              textColor: Colors.white,   
-                              shape: const Border(),
-                              children: <Widget>[
-                                Container( 
-                                  margin: const EdgeInsets.symmetric(horizontal: 15),
-                                  child: Text(event.descriptionText, style: const TextStyle(color: Colors.white))
-                                )
-                              ],
-                            ),
+                                  collapsedIconColor: Colors.white,  
+                                  iconColor: Colors.white,  
+                                  textColor: Colors.white,   
+                                  shape: const Border(),
+                                  children: <Widget>[
+                                    Container( 
+                                      margin: const EdgeInsets.symmetric(horizontal: 15),
+                                      child: Text(event.descriptionText, style: const TextStyle(color: Colors.white))
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Visibility(
+                                visible: event.memberId == user['authId'],
+                                child: Positioned(
+                                  right: 18,
+                                  top: 12,
+                                  child: SizedBox(
+                                    height: 30,
+                                    width: 30,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        AwesomeDialog(
+                                          context: context,
+                                          dialogType: DialogType.warning,
+                                          animType: AnimType.topSlide,
+                                          title: 'Cancel Event?', 
+                                          dismissOnTouchOutside: false,
+                                          btnOkOnPress: () async {
+                                              final response = await http.post(
+                                                Uri.parse('https://ww2.selfiesmile.app/member/cancel/event'),
+                                                body: { 
+                                                  'event_id': event.id
+                                                },
+                                              );
+                                              if (response.statusCode == 200) {
+                                                final Map<String, dynamic> res = json.decode(response.body);
+                                                print(res);
+                                                if (res['status'].toString() == 'true') {
+                                                  AwesomeDialog(
+                                                    context: context,
+                                                    dialogType: DialogType.warning,
+                                                    animType: AnimType.topSlide,
+                                                    title: res['message'], 
+                                                    dismissOnTouchOutside: false,
+                                                    btnOkOnPress: (){}
+                                                  ).show();
+                                                }
+                                              }
+                                          },
+                                          btnOkText: 'Yes',
+                                          btnCancelOnPress: () {},
+                                        ).show();
+                                      }, 
+                                      style: ElevatedButton.styleFrom(
+                                        padding: EdgeInsets.zero,
+                                        shape: const CircleBorder(),
+                                      ),
+                                      child: const Icon(Icons.cancel, color: Colors.red)
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ); 
                         },
                       ),
@@ -232,6 +325,9 @@ class _EventsState extends State<Events> {
                 setState(() { 
                   isCreateBooking = true; 
                   selectedBookDate = date;
+                  bookingTitle.text = '';
+                  bookingMessage.text = '';
+                  currentTime = TimeOfDay.now();
                 });
               },
               child: Icon(Icons.add, color: Colors.grey.shade800), 
@@ -296,7 +392,7 @@ class _EventsState extends State<Events> {
                                               onPressed: () async {
                                                 final TimeOfDay? picked = await showTimePicker(
                                                   context: context,
-                                                  initialTime: TimeOfDay.now(),
+                                                  initialTime: currentTime,
                                                 );
                                                 if (picked != null) {
                                                 String formattedHour = (picked.hourOfPeriod % 12).toString().padLeft(2, '0');
@@ -318,6 +414,7 @@ class _EventsState extends State<Events> {
                                         child: SizedBox(
                                           width: 200,
                                           child: TextFormField(
+                                            controller: bookingTitle,
                                             decoration: const InputDecoration( 
                                               hintText: 'Title', 
                                               hintStyle: TextStyle(color: Colors.white54), 
@@ -344,11 +441,12 @@ class _EventsState extends State<Events> {
                                       Container(
                                         margin: const EdgeInsets.only(left: 40),
                                         alignment: Alignment.topLeft,
-                                        child: const SizedBox(
+                                        child: SizedBox(
                                           width: 200,
-                                          child: TextField( 
+                                          child: TextFormField(
                                             keyboardType: TextInputType.multiline,
-                                            decoration: InputDecoration(
+                                            controller: bookingMessage,
+                                            decoration: const InputDecoration(
                                               hintText: 'Message', 
                                               hintStyle: TextStyle(color: Colors.white54),
                                               enabledBorder: UnderlineInputBorder( 
@@ -366,10 +464,39 @@ class _EventsState extends State<Events> {
                                               contentPadding: EdgeInsets.zero,
                                             ),
                                             cursorColor: Colors.white70,
-                                            style: TextStyle(color: Colors.white)
+                                            style: const TextStyle(color: Colors.white)
                                           )
                                         ),
-                                      ),  
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Container( 
+                                        margin: const EdgeInsets.only(left: 5),
+                                        alignment: Alignment.topLeft,
+                                        child: Row(
+                                          children: [
+                                            const Text('To : ', style: TextStyle(color: Colors.white70, fontSize: 20, fontWeight: FontWeight.w800)),
+                                            ToggleSwitch(
+                                              initialLabelIndex: 0, 
+                                              minWidth: 100.0,
+                                              activeBgColor: [Colors.blueAccent.shade200],
+                                              activeFgColor: Colors.white,
+                                              customTextStyles: const [
+                                                TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 15.0
+                                                )
+                                              ],
+                                              multiLineText: true,
+                                              centerText: true,
+                                              totalSwitches: 2,
+                                              labels: const ['All Group', 'My Group'],
+                                              onToggle: (index) {
+                                                groupType = index.toString();
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ],
                                   ),  
                                   const Positioned(
@@ -397,7 +524,7 @@ class _EventsState extends State<Events> {
                             ),
                           ),
                           Positioned(
-                            top: 300,
+                            top: 364,
                             left: 0,
                             right: 0,
                             child: Center(
@@ -428,23 +555,38 @@ class _EventsState extends State<Events> {
                                         fontSize: 20,
                                         fontWeight: FontWeight.w600,
                                         color: Color(0xFF222222),
-                                      ),
+                                      ), 
                                     ),
                                   ),
-                                  onPressed: () async {
+                                  onPressed: () async { 
                                     setState(() { isSubmit = true; });
-
-                                    // final response = await http.post(
-                                    //   Uri.parse('https://ww2.selfiesmile.app/member/book/event'),
-                                    //   body: {'member_id': '12', 'group': '12'},
-                                    // ); 
-                                    // if (response.statusCode == 200) {
-                                    //   final List<dynamic> data = json.decode(response.body);
-                                    //   print(data);
-                                    // }
-
-
-                                    await Future.delayed(const Duration(seconds: 2));
+                                    final response = await http.post(
+                                      Uri.parse('https://ww2.selfiesmile.app/member/book/event'),
+                                      body: {
+                                        'group_type': groupType == '0' ? 'All Group' : 'Individual Group',
+                                        'group_name': user['group'],
+                                        'date': selectedBookDate,
+                                        'time': selectedBookTime,
+                                        'title': bookingTitle.text,
+                                        'message': bookingMessage.text,
+                                        'member_id': user['authId']
+                                      },
+                                    );
+                                    if (response.statusCode == 200) {
+                                      final Map<String, dynamic> res = json.decode(response.body);
+                                      if (res['status'].toString() == 'true') {
+                                        AwesomeDialog(
+                                          context: context,
+                                          dialogType: DialogType.success,
+                                          animType: AnimType.rightSlide,
+                                          title: res['message'], 
+                                          dismissOnTouchOutside: false,
+                                          btnOkOnPress: () { 
+                                            setState(() { isCreateBooking = false; });
+                                          },
+                                        ).show(); 
+                                      }
+                                    } 
                                     setState(() { isSubmit = false; });
                                   },
                                   child: Row(
@@ -526,6 +668,8 @@ class GroupEvent {
   final DateTime createdAt;
   final DateTime updatedAt;
   final Color eventColor;
+  final String bookingStatus;
+  final String memberId;
 
   GroupEvent({
     required this.id,
@@ -539,6 +683,8 @@ class GroupEvent {
     required this.createdAt,
     required this.updatedAt,
     required this.eventColor,
+    required this.bookingStatus,
+    required this.memberId
   });
 
   factory GroupEvent.fromJson(Map<String, dynamic> json) {
@@ -554,6 +700,8 @@ class GroupEvent {
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
       eventColor: convertHexToColor(json['event_color']),
+      bookingStatus: json['booking_status'].toString(),
+      memberId: json['member_id'].toString(),
     );
   }
 }
