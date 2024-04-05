@@ -56,6 +56,11 @@ dependencies:
   intl: ^0.19.0
   toggle_switch: ^2.3.0
   font_awesome_flutter: ^10.7.0
+  syncfusion_flutter_pdfviewer: ^24.2.8
+  another_flutter_splash_screen: ^1.2.0
+  flutter_inappwebview: ^6.0.0
+  webview_flutter: ^4.7.0
+  flutter_cached_pdfview: ^0.4.2
 
 dev_dependencies:
   flutter_test:
@@ -87,7 +92,6 @@ flutter:
     - images/sukioMahikari.png
     - images/logoitfs.png
     - images/cal4care.png
-    - images/faceId.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

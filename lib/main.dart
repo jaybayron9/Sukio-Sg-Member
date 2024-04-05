@@ -3,15 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http; 
+import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
+import 'package:http/http.dart' as http;
 import 'package:sukio_member/utils/user.dart';
 import 'dart:convert';
 import 'auth/login.dart';
-import 'app.dart'; 
+import 'app.dart';
 
-void main() async {  
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp()); 
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -28,7 +27,40 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Main(),
+      home: const SplashPage(),
+    );
+  }
+}
+
+class SplashPage extends StatefulWidget {
+  const SplashPage({Key? key}) : super(key: key);
+
+  @override
+  SplashPageState createState() => SplashPageState();
+}
+
+class SplashPageState extends State<SplashPage> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FlutterSplashScreen.fadeIn(
+      gradient: const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Colors.yellow, Colors.amber],
+      ),
+      childWidget: SizedBox(
+        height: 150,
+        width: 150,
+        child: Image.asset("images/splashLogo.png"),
+      ),
+      duration: const Duration(milliseconds: 1200),
+      animationDuration: const Duration(milliseconds: 600),
+      nextScreen: const Main(),
     );
   }
 }
@@ -41,6 +73,7 @@ class Main extends StatefulWidget {
 }
 
 class _MainState extends State<Main> {
+  bool _loading = true;
   bool _isLoggedIn = false;
 
   @override
@@ -53,10 +86,9 @@ class _MainState extends State<Main> {
     final storedValue = await getFromLocalStorage();
     if (storedValue != null) {
       final isAuthenticated = await auth(storedValue.toString());
-      setState(() {
-        _isLoggedIn = isAuthenticated;
-      });
+      _isLoggedIn = isAuthenticated;
     }
+    setState(() { _loading = false; });
   }
 
   Future<String?> getFromLocalStorage() async {
@@ -90,7 +122,7 @@ class _MainState extends State<Main> {
 
         return true;
       } else {
-        User.removeUser(); 
+        User.removeUser();
       }
     }
     return false;
@@ -98,6 +130,14 @@ class _MainState extends State<Main> {
 
   @override
   Widget build(BuildContext context) {
-    return _isLoggedIn ? const App() : const Login(); 
+    return Scaffold(
+      body: _loading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : _isLoggedIn
+              ? const App()
+              : const Login(),
+    );
   }
-} 
+}
