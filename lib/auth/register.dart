@@ -34,7 +34,7 @@ class _RegisterState extends State<Register> {
   dynamic empEmailErr = '';
   dynamic invEmailErr = '';
   dynamic invPhoneErr = '';
-  dynamic existPhoneErr = ''; 
+  dynamic existPhoneErr = '';
   bool noError = false;
 
   final border = OutlineInputBorder(borderRadius: BorderRadius.circular(10)); 

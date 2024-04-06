@@ -122,16 +122,15 @@ class _EventsState extends State<Events> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ToggleSwitch(
-                          initialLabelIndex: selectedGroupType,
-                          minWidth: 150.0,
+                          initialLabelIndex: selectedGroupType, 
                           minHeight: 28,
                           activeBgColor: [Colors.blue.shade900],
                           activeFgColor: Colors.white,
-                          customTextStyles: const [TextStyle(color: Colors.white, fontSize: 15.0)],
+                          customTextStyles: const [TextStyle(color: Colors.white, fontSize: 10.0)],
                           multiLineText: true,
                           centerText: true,
                           totalSwitches: 2,
-                          labels: ['All Group', 'My Group (${user['group']})'],
+                          labels: ['All Group', user['group'].toString()],  
                           onToggle: (index) async {
                             setState(() {
                               selectedGroupType = index!.toInt();
@@ -153,12 +152,12 @@ class _EventsState extends State<Events> {
                             });
                           },
                         ),
+                        const SizedBox(width: 5),
                         IconButton(
                           visualDensity: VisualDensity.compact,
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.zero,
-                            shape: const CircleBorder(),
-                            backgroundColor: Colors.blue.shade900,
+                            shape: const CircleBorder(), 
                           ),
                           onPressed: () async {
                             setState(() {
@@ -167,7 +166,7 @@ class _EventsState extends State<Events> {
                               filteredEvents = events.where((event) => isSameDay(event.date, _selectedDay)).toList();
                             });
                           },
-                          icon: const Icon(Icons.today, color: Colors.white, size: 20)
+                          icon: Icon(Icons.today, color: Colors.blue.shade900, size: 28)
                         ), 
                       ],
                     ),
@@ -474,9 +473,10 @@ class _EventsState extends State<Events> {
                     multiLineText: true,
                     centerText: true,
                     totalSwitches: 2,
-                    labels: const ['All Group', 'My Group'],
+                    labels: ['All Group', user['group'].toString()],
                     onToggle: (index) {
                       groupType = index.toString();
+                      print(groupType);
                     },
                   ),
                   const SizedBox(height: 20),
@@ -596,12 +596,13 @@ class _EventsState extends State<Events> {
               foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
             ),
             onPressed: () async {
+              String type = groupType == '0' ? 'All Group' : 'Individual Group';
               Navigator.of(ctx).pop();
               setState(() { isSubmit = true; });
               final response = await http.post(
                 Uri.parse('https://ww2.selfiesmile.app/member/book/event'),
                 body: {
-                  'group_type': groupType == '0' ? 'All Group' : 'Individual Group',
+                  'group_type': type,
                   'group_name': user['group'],
                   'date': selectedBookDate,
                   'time': selectedBookTime,
@@ -623,9 +624,7 @@ class _EventsState extends State<Events> {
                   ).show();
                 }
               }
-              setState(() {
-                isSubmit = false;
-              });
+              setState(() { isSubmit = false; });
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

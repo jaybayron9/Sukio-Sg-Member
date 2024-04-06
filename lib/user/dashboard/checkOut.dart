@@ -394,7 +394,7 @@ class _CheckOutState extends State<CheckOut> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'REQUEST CHECK OUT',
+                                'AUTO CHECK OUT',
                                 style: TextStyle(
                                   fontFamily: 'Circular',
                                   fontSize: 20,

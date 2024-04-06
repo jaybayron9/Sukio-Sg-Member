@@ -62,9 +62,7 @@ class _AppState extends State<App> {
     OneSignal.Notifications.requestPermission(true);
     Timer.periodic(const Duration(seconds: 3), (timer) {
       isNotCheckOut();
-    });
-    checkAccountStatus();
-    // isNotCheckOut();
+    }); 
     userData();
     websocket();
   }
@@ -102,7 +100,7 @@ class _AppState extends State<App> {
           animType: AnimType.rightSlide,
           dismissOnTouchOutside: false,
           btnOkColor: Colors.red,
-          title: 'Account Status asdf',
+          title: 'Account Status',
           desc: res['message'],
           btnOkOnPress: () {
             prefs.remove('authId');
@@ -219,7 +217,7 @@ class _AppState extends State<App> {
                     Container(
                       margin: const EdgeInsets.only(bottom: 10),
                       child: const Text(
-                        'Welcome to Sukio Mahikari!',
+                        'Welcome to Sukyo Mahikari!',
                         style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -269,12 +267,16 @@ class _AppState extends State<App> {
                                   style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
                                 ),
                                 Text(
-                                  'ID: ${user['membershipId']}',
+                                  'Group : ${user['group']}',
                                   style: const TextStyle(fontWeight: FontWeight.w400, color: Colors.white70, fontSize: 12),
-                                ),
+                                ), 
+                                Text(
+                                  'ID : ${user['membershipId']}',
+                                  style: const TextStyle(fontWeight: FontWeight.w400, color: Colors.white70, fontSize: 12),
+                                ), 
                               ],
                             ),
-                          )
+                          ) 
                         ],
                       ),
                     )
@@ -350,7 +352,7 @@ class _AppState extends State<App> {
                 },
               ),
               const SizedBox(height: 270),
-              const Text('App v8.0', textAlign: TextAlign.center, style: TextStyle(color: Colors.blueGrey))
+              const Text('App v8.1', textAlign: TextAlign.center, style: TextStyle(color: Colors.blueGrey))
             ],
           ),
         ),
