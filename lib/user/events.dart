@@ -39,6 +39,7 @@ class _EventsState extends State<Events> {
   TimeOfDay currentTime = TimeOfDay.now();
   int selectedGroupType = 0;
   String filterGroupType = 'All Group';
+  bool isJoinedEvent = false;
 
   @override
   void initState() {
@@ -96,7 +97,7 @@ class _EventsState extends State<Events> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.amber.shade500,
+      backgroundColor: Colors.grey.shade300,
       body: Stack(
         children: [
           Column(
@@ -229,20 +230,9 @@ class _EventsState extends State<Events> {
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(30.0)),
                       ),
                       child: ListView(
-                        children: [ 
-                          button(Icons.add, "Add Event", context, () {
-                            final formatter = DateFormat('d MMMM y');
-                            String date = formatter.format(_selectedDay);
-                            setState(() {
-                              selectedBookDate = date;
-                              bookingTitle.text = '';
-                              bookingMessage.text = '';
-                              currentTime = TimeOfDay.now();
-                            }); 
-                            showModal(context);
-                          }),
-                          const SizedBox(height: 100),
-                          const Text(
+                        children: const [ 
+                          SizedBox(height: 100),
+                          Text(
                             'No event(s)',
                             textAlign: TextAlign.center,
                             style: TextStyle(fontSize: 20, color: Colors.white70, fontWeight: FontWeight.bold),
@@ -259,17 +249,6 @@ class _EventsState extends State<Events> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          button(Icons.add, "Add Event", context, () {
-                            final formatter = DateFormat('d MMMM y');
-                            String date = formatter.format(_selectedDay);
-                            setState(() {
-                              selectedBookDate = date;
-                              bookingTitle.text = '';
-                              bookingMessage.text = '';
-                              currentTime = TimeOfDay.now();
-                            }); 
-                            showModal(context);
-                          }),
                           Expanded(
                             child: ListView.builder(
                               itemCount: filteredEvents.length,
@@ -288,23 +267,14 @@ class _EventsState extends State<Events> {
                                           iconColor: Colors.white,
                                           textColor: Colors.white,
                                           shape: const Border(),
-                                          title: Row(
-                                            children: [
-                                              Text(event.eventTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)), 
-                                              Visibility(
-                                                visible: event.bookingStatus == 'Booked' || event.memberId != 'null',
-                                                child: Container(
-                                                  margin: const EdgeInsets.only(left: 10),
-                                                  decoration: const BoxDecoration(color: Colors.white30, borderRadius: BorderRadius.all(Radius.circular(5))),
-                                                  child: const Icon(Icons.add, size: 15),
-                                                )
-                                              ),
-                                            ],
-                                          ),
-                                          // title: Text(
-                                          //   '${event.eventTitle} ${event.bookingStatus == 'Booked' ? '(+)' : ''}',
-                                          //   style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)
-                                          // ),
+                                          title: Text(
+                                            event.eventTitle,
+                                            softWrap: true,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold, 
+                                              color: Colors.white
+                                            )
+                                          ),  
                                           subtitle: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
@@ -351,7 +321,7 @@ class _EventsState extends State<Events> {
                                       ),
                                     ),
                                     Visibility(
-                                      visible: event.memberId == user['authId'],
+                                      visible: true,
                                       child: Positioned(
                                         right: 0,
                                         top: 10,
@@ -359,30 +329,42 @@ class _EventsState extends State<Events> {
                                           margin: const EdgeInsets.only(right: 20),
                                           height: 30,
                                           width: 30,
-                                          child: ElevatedButton(
+                                          child: IconButton(
                                             onPressed: () async {
-                                              AwesomeDialog(
-                                                context: context,
-                                                dialogType: DialogType.warning,
-                                                animType: AnimType.topSlide,
-                                                title: 'Booking Cancel',
-                                                desc: 'Are you sure, you want to cancel the event?',
-                                                dismissOnTouchOutside: false,
-                                                btnOkOnPress: () async {
-                                                  await http.post(
-                                                    Uri.parse('https://ww2.selfiesmile.app/member/cancel/event'),
-                                                    body: {'event_id': event.id},
-                                                  );
+                                              final response = await http.post(
+                                                Uri.parse('https://ww2.selfiesmile.app/member/join/event'),
+                                                body: { 
+                                                  'member_id': user['authId'].toString(),
+                                                  'event_id': event.id
                                                 },
-                                                btnOkText: 'Yes',
-                                                btnCancelOnPress: () {},
-                                                btnCancelText: 'No'
-                                              ).show();
+                                              );
+                                              if (response.statusCode == 200) {
+                                                final Map<String, dynamic> res = json.decode(response.body);
+                                                if (res['status'].toString() == 'true') {
+                                                  setState(() { isJoinedEvent = true; });
+                                                  showModal(
+                                                    context, 
+                                                    event.eventTitle, 
+                                                    event.eventDate, 
+                                                    event.time, 
+                                                    1, 
+                                                    event.participantsNo, 
+                                                    '19 min', 
+                                                    user['authId'].toString(), 
+                                                    event.id
+                                                  );
+                                                }
+                                              }  
                                             },
-                                            style: ElevatedButton.styleFrom(
-                                              padding: EdgeInsets.zero,  
+                                            style: ElevatedButton.styleFrom( 
+                                              padding: EdgeInsets.zero,
+                                              backgroundColor: Colors.white,
+                                              shadowColor: Colors.grey,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
                                             ),
-                                            child: Icon(Icons.delete, size: 18, color: Colors.red.shade500)
+                                            icon: const Icon(Icons.add, color: Colors.black),
                                           ),
                                         ),
                                       ),
@@ -451,201 +433,206 @@ class _EventsState extends State<Events> {
     );
   }
 
-  showModal(BuildContext context) {
+  showModal(BuildContext context, eventTitle, date, time, memberJoin, participantsNo, duration, memberId, eventId) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Center(child: Text("Book Event", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey.shade900))),
+        title: Center(child: Text("Event", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey.shade900))),
         content: StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return SizedBox(
-              height: 250,
+              height: 180,
               width: MediaQuery.of(context).size.width * 0.9,
-              child: Column(
+              child: Column( 
                 children: [
-                  ToggleSwitch(
-                    initialLabelIndex: 0,
-                    minWidth: 100.0,
-                    minHeight: 30,
-                    activeBgColor: [Colors.blueAccent.shade200],
-                    activeFgColor: Colors.white,
-                    customTextStyles: const [TextStyle(color: Colors.white, fontSize: 15.0)],
-                    multiLineText: true,
-                    centerText: true,
-                    totalSwitches: 2,
-                    labels: ['All Group', user['group'].toString()],
-                    onToggle: (index) {
-                      groupType = index.toString();
-                      print(groupType);
-                    },
-                  ),
                   const SizedBox(height: 20),
                   Row( 
                     children: [
-                      Text('Date : ', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18, color: Colors.grey.shade600),),
-                      Container(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          selectedBookDate, 
-                          textAlign: TextAlign.start, 
-                          style: TextStyle(
-                            color: Colors.grey.shade800, 
-                            fontSize: 18, 
-                            fontWeight: FontWeight.bold
-                          )
-                        ),
-                      ),
+                      Text(
+                        'Title: ', 
+                        textAlign: TextAlign.start, 
+                        style: TextStyle(
+                          color: Colors.grey.shade600, 
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold
+                        )
+                      ), 
+                      Text(
+                        eventTitle, 
+                        textAlign: TextAlign.start, 
+                        style: TextStyle(
+                          color: Colors.grey.shade800, 
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold
+                        )
+                      ), 
                     ],
                   ),
-                  const SizedBox(height: 8), 
-                  Row(
+                  const SizedBox(height: 8),
+                  Row( 
                     children: [
-                      Text('Time : ', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18, color: Colors.grey.shade600),),
-                      TextButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          shape: const CircleBorder(),
-                        ),
-                        onPressed: () async {
-                          final TimeOfDay? picked = await showTimePicker(
-                            context: context,
-                            initialTime: currentTime,
-                          );
-                          if (picked != null) {
-                            String formattedHour = (picked.hourOfPeriod % 12).toString().padLeft(2, '0');
-                            String formattedMinute = picked.minute.toString().padLeft(2, '0');
-                            String period = picked.period == DayPeriod.am ? 'AM' : 'PM';
-                            String newTime = '$formattedHour:$formattedMinute $period';
-                            setState(() {
-                              selectedBookTime = newTime;
-                            });
-                          }
-                        },
-                        child: Text(
-                          selectedBookTime.isNotEmpty ? selectedBookTime : 'Select Time',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey.shade800, fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
+                      Text(
+                        'Date: ', 
+                        textAlign: TextAlign.start, 
+                        style: TextStyle(
+                          color: Colors.grey.shade600, 
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold
+                        )
                       ),
+                      Text(
+                        date, 
+                        textAlign: TextAlign.start, 
+                        style: TextStyle(
+                          color: Colors.grey.shade800, 
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold
+                        )
+                      ), 
                     ],
-                  ), 
-                  TextFormField(
-                    controller: bookingTitle,
-                    decoration: InputDecoration(
-                      hintText: 'Title',
-                      hintStyle: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.grey.shade600,
-                          width: 1.0,
-                        ),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.grey.shade600,
-                          width: 1.0,
-                        ),
-                      ),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    cursorColor: Colors.grey.shade700,
-                    style: TextStyle(
-                      color: Colors.grey.shade800, 
-                      fontSize: 18, 
-                      fontWeight: FontWeight.bold
-                    )
                   ),
-                  const SizedBox(height: 15), 
-                  TextFormField(
-                    keyboardType: TextInputType.multiline,
-                    controller: bookingMessage,
-                    decoration: InputDecoration(
-                      hintText: 'Description',
-                      hintStyle: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.grey.shade600,
-                          width: 1.0,
-                        ),
+                  const SizedBox(height: 8),
+                  Row( 
+                    children: [
+                      Text(
+                        'Time: ',
+                        textAlign: TextAlign.start, 
+                        style: TextStyle(
+                          color: Colors.grey.shade600, 
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold
+                        )
                       ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.grey.shade600,
-                          width: 1.0,
-                        ),
-                      ),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    cursorColor: Colors.grey.shade600,
-                    style: TextStyle(
-                      color: Colors.grey.shade800, 
-                      fontSize: 18, 
-                      fontWeight: FontWeight.bold
-                    )
+                      Text(
+                        time,
+                        textAlign: TextAlign.start, 
+                        style: TextStyle(
+                          color: Colors.grey.shade800, 
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold
+                        )
+                      ), 
+                    ]
                   ),
-                  const SizedBox(height: 8), 
+                  const SizedBox(height: 8),
+                  Row( 
+                    children: [
+                      Text(
+                        'Participants: ',
+                        textAlign: TextAlign.start, 
+                        style: TextStyle(
+                          color: Colors.grey.shade600, 
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold
+                        )
+                      ),
+                      Text(
+                        '$memberJoin/$participantsNo',
+                        textAlign: TextAlign.start, 
+                        style: TextStyle(
+                          color: Colors.grey.shade800, 
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold
+                        )
+                      ), 
+                    ]
+                  ),
+                  const SizedBox(height: 8),
+                  Row( 
+                    children: [
+                      Text(
+                        'Duration: ',
+                        textAlign: TextAlign.start, 
+                        style: TextStyle(
+                          color: Colors.grey.shade600, 
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold
+                        )
+                      ),
+                      Text(
+                        duration,
+                        textAlign: TextAlign.start, 
+                        style: TextStyle(
+                          color: Colors.grey.shade800, 
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold
+                        )
+                      ), 
+                    ]
+                  ),
                 ],
               ),
             );
           },
         ),
-        actions: <Widget>[
-          ElevatedButton(
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all<Color>(Colors.amber),
-              foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
-            ),
-            onPressed: () async {
-              String type = groupType == '0' ? 'All Group' : 'Individual Group';
-              Navigator.of(ctx).pop();
-              setState(() { isSubmit = true; });
-              final response = await http.post(
-                Uri.parse('https://ww2.selfiesmile.app/member/book/event'),
-                body: {
-                  'group_type': type,
-                  'group_name': user['group'],
-                  'date': selectedBookDate,
-                  'time': selectedBookTime,
-                  'title': bookingTitle.text,
-                  'message': bookingMessage.text,
-                  'member_id': user['authId']
-                },
-              );
-              if (response.statusCode == 200) {
-                final Map<String, dynamic> res = json.decode(response.body);
-                if (res['status'].toString() == 'true') {
-                  AwesomeDialog(
-                    context: context,
-                    dialogType: DialogType.success,
-                    animType: AnimType.rightSlide,
-                    title: res['message'],
-                    dismissOnTouchOutside: false,
-                    btnOkOnPress: () {},
-                  ).show();
-                }
-              }
-              setState(() { isSubmit = false; });
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.confirmation_num_outlined,
-                  color: Colors.blue.shade800,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'SUBMIT',
-                  style: TextStyle(
-                    fontFamily: 'Circular',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.blue.shade800,
-                  ),
-                ),
-              ],
-            ),
-          ),
+        actions: const <Widget>[
+          // Center(
+          //   child: 
+          //     isJoinedEvent 
+          //     ? ElevatedButton(
+          //         style: ButtonStyle(
+          //           backgroundColor: MaterialStateProperty.all<Color>(Colors.amber),
+          //           foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
+          //         ),
+          //         onPressed: () async {   
+          //           final response = await http.post(
+          //             Uri.parse('https://ww2.selfiesmile.app/member/join/event'),
+          //             body: { 
+          //               'member_id': memberId,
+          //               'event_id': eventId
+          //             },
+          //           );
+          //           if (response.statusCode == 200) {
+          //             final Map<String, dynamic> res = json.decode(response.body);
+          //             print(res);
+          //             if (res['status'].toString() == 'true') { 
+          //               Navigator.of(ctx).pop();
+          //             }
+          //           } 
+          //         },
+          //         child: Text(
+          //           'JOIN EVENT',
+          //           style: TextStyle(
+          //             fontFamily: 'Circular',
+          //             fontSize: 20,
+          //             fontWeight: FontWeight.w600,
+          //             color: Colors.blue.shade800,
+          //           ),
+          //         ),
+          //       )
+          //     : ElevatedButton(
+          //         style: ButtonStyle(
+          //           backgroundColor: MaterialStateProperty.all<Color>(Colors.amber),
+          //           foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
+          //         ),
+          //         onPressed: () async {
+          //           final response = await http.post(
+          //             Uri.parse('https://ww2.selfiesmile.app/member/cancel/join/event'),
+          //             body: { 
+          //               'member_id': memberId,
+          //               'event_id': eventId
+          //             },
+          //           );
+          //           if (response.statusCode == 200) {
+          //             final Map<String, dynamic> res = json.decode(response.body);
+          //             print(res);
+          //             if (res['status'].toString() == 'true') { 
+          //               setState(() { isJoinedEvent = false; });
+          //               Navigator.of(ctx).pop();
+          //             }
+          //           }
+          //         },
+          //         child: Text(
+          //           'CANCEL JOIN',
+          //           style: TextStyle(
+          //             fontFamily: 'Circular',
+          //             fontSize: 20,
+          //             fontWeight: FontWeight.w600,
+          //             color: Colors.blue.shade800,
+          //           ),
+          //         ),
+          //       )
+          // ),
         ],
       ),
     );
@@ -666,21 +653,23 @@ class GroupEvent {
   final Color eventColor;
   final String bookingStatus;
   final String memberId;
+  final String participantsNo;
 
-  GroupEvent(
-      {required this.id,
-      required this.groupType,
-      required this.groupName,
-      required this.eventTitle,
-      required this.date,
-      required this.eventDate,
-      required this.time,
-      required this.descriptionText,
-      required this.createdAt,
-      required this.updatedAt,
-      required this.eventColor,
-      required this.bookingStatus,
-      required this.memberId});
+  GroupEvent({required this.id,
+    required this.groupType,
+    required this.groupName,
+    required this.eventTitle,
+    required this.date,
+    required this.eventDate,
+    required this.time,
+    required this.descriptionText,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.eventColor,
+    required this.bookingStatus,
+    required this.memberId,
+    required this.participantsNo
+  });
 
   factory GroupEvent.fromJson(Map<String, dynamic> json) {
     return GroupEvent(
@@ -697,6 +686,7 @@ class GroupEvent {
       eventColor: convertHexToColor(json['event_color']),
       bookingStatus: json['booking_status'].toString(),
       memberId: json['member_id'].toString(),
+      participantsNo: json['participants_no'].toString()
     );
   }
 }
@@ -709,135 +699,3 @@ Color convertHexToColor(String hexColor) {
   parsedColor = parsedColor + 0xFF000000;
   return Color(parsedColor);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// child: ListView.builder(
-//   itemCount: filteredEvents.length,
-//   itemBuilder: (context, index) {
-//     GroupEvent event = filteredEvents[index];
-//     return Stack(
-//       children: [
-//         Container(
-//           margin: const EdgeInsets.only(top: 25, bottom: 0, left: 30, right: 30),
-//           decoration: BoxDecoration(color: event.eventColor, borderRadius: const BorderRadius.all(Radius.circular(10.0))),
-//           child: ExpansionTile(
-//             backgroundColor: event.eventColor,
-//             title: Row(
-//               children: [
-//                 Expanded(
-//                   child: Text(event.eventTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-//                 ),
-//                 Visibility(
-//                   visible: event.bookingStatus == 'Booked' || event.memberId != 'null',
-//                   child: Container(
-//                     margin: const EdgeInsets.only(left: 10),
-//                     decoration: const BoxDecoration(color: Colors.white30, borderRadius: BorderRadius.all(Radius.circular(5))),
-//                     child: const Icon(Icons.add, size: 15),
-//                   )
-//                 ),
-//               ],
-//             ),
-//             // title: Text(
-//             //   '${event.eventTitle} ${event.bookingStatus == 'Booked' ? '(+)' : ''}',
-//             //   style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)
-//             // ),
-//             subtitle: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Row(
-//                   children: [
-//                     Expanded(
-//                       child: RichText(
-//                         text: TextSpan(
-//                           text: 'Date: ',
-//                           style: const TextStyle(color: Colors.white),
-//                           children: <TextSpan>[
-//                             TextSpan(text: '${event.eventDate} ', style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
-//                             const TextSpan(text: 'Time: ', style: TextStyle(color: Colors.white)),
-//                             TextSpan(text: '${event.time} ', style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
-//                           ],
-//                         ),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//             collapsedIconColor: Colors.white,
-//             iconColor: Colors.white,
-//             textColor: Colors.white,
-//             shape: const Border(),
-//             children: <Widget>[
-//               Container(
-//                 margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-//                 child: Row(
-//                   mainAxisAlignment: MainAxisAlignment.start,
-//                   children: [
-//                     Expanded(
-//                       child: Text(
-//                         event.descriptionText,
-//                         style: const TextStyle(color: Colors.white),
-//                         textAlign: TextAlign.start,
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//         Visibility(
-//           visible: event.memberId == user['authId'],
-//           child: Positioned(
-//             right: 18,
-//             top: 12,
-//             child: SizedBox(
-//               height: 30,
-//               width: 30,
-//               child: ElevatedButton( 
-//                   onPressed: () async {
-//                     AwesomeDialog(
-//                       context: context,
-//                       dialogType: DialogType.warning,
-//                       animType: AnimType.topSlide,
-//                       title: 'Booking Cancel',
-//                       desc: 'Are you sure, you want to cancel the event?',
-//                       dismissOnTouchOutside: false,
-//                       btnOkOnPress: () async {
-//                         await http.post(
-//                           Uri.parse('https://ww2.selfiesmile.app/member/cancel/event'),
-//                           body: {'event_id': event.id},
-//                         );
-//                       },
-//                       btnOkText: 'Yes',
-//                       btnCancelOnPress: () {},
-//                     ).show();
-//                   },
-//                   style: ElevatedButton.styleFrom(
-//                     padding: EdgeInsets.zero,
-//                     shape: const CircleBorder(),
-//                   ),
-//                   child: Icon(Icons.close, color: Colors.red.shade300)),
-//             ),
-//           ),
-//         ),
-//       ],
-//     );
-//   },
-// ),
