@@ -91,54 +91,55 @@ class _CheckInState extends State<CheckIn> {
     if (cameraStatus.isGranted) {
       final qrdata = QrBarCodeScannerDialog();
       qrdata.getScannedQrBarCode(
-          context: context,
-          onCode: (String? value) async {
-            final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/in"), body: {
-              'member_id': prefs.getString('authId').toString(),
-              'code': value,
-            });
-            if (res.statusCode == 200) {
-              final Map<String, dynamic> responseData = json.decode(res.body);
-              if (responseData['status'].toString() == 'true') {
-                if (responseData['type'] == 'in') {
-                  triggerMasterCheckIn();
-                }
-                AwesomeDialog(
-                  context: context,
-                  dialogType: DialogType.success,
-                  animType: AnimType.rightSlide,
-                  title: responseData['type'] == 'in' ? 'Checked In' : 'Checked Out',
-                  desc: responseData['message'],
-                  dismissOnTouchOutside: false,
-                  btnOkOnPress: () async {
-                    if (responseData['type'] == 'in') {
-                      setState(() {
-                        isCheckIn = true;
-                      });
-                      Navigator.pushNamed(context, '/checkOut');
-                    } else if (responseData['type'] == 'out') {
-                      setState(() {
-                        isCheckIn = false;
-                      });
-                      Navigator.pushNamed(context, '/checkIn');
-                    }
-                    getDateCheckIn();
-                  },
-                ).show();
-              } else {
-                AwesomeDialog(
-                  context: context,
-                  dialogType: DialogType.error,
-                  animType: AnimType.rightSlide,
-                  title: responseData['type'].toString() == 'in' ? 'Check-in Issue' : 'Check-out Issue',
-                  desc: responseData['message'],
-                  dismissOnTouchOutside: false,
-                  btnOkColor: Colors.red,
-                  btnOkOnPress: () {},
-                ).show();
-              }
-            }
+        context: context,
+        onCode: (String? value) async {
+          final res = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/in"), body: {
+            'member_id': prefs.getString('authId').toString(),
+            'code': value,
           });
+          if (res.statusCode == 200) {
+            final Map<String, dynamic> responseData = json.decode(res.body);
+            if (responseData['status'].toString() == 'true') {
+              if (responseData['type'] == 'in') {
+                triggerMasterCheckIn();
+              }
+              AwesomeDialog(
+                context: context,
+                dialogType: DialogType.success,
+                animType: AnimType.rightSlide,
+                title: responseData['type'] == 'in' ? 'Checked In' : 'Checked Out',
+                desc: responseData['message'],
+                dismissOnTouchOutside: false,
+                btnOkOnPress: () async {
+                  if (responseData['type'] == 'in') {
+                    setState(() {
+                      isCheckIn = true;
+                    });
+                    Navigator.pushNamed(context, '/checkOut');
+                  } else if (responseData['type'] == 'out') {
+                    setState(() {
+                      isCheckIn = false;
+                    });
+                    Navigator.pushNamed(context, '/checkIn');
+                  }
+                  getDateCheckIn();
+                },
+              ).show();
+            } else {
+              AwesomeDialog(
+                context: context,
+                dialogType: DialogType.error,
+                animType: AnimType.rightSlide,
+                title: responseData['type'].toString() == 'in' ? 'Check-in Issue' : 'Check-out Issue',
+                desc: responseData['message'],
+                dismissOnTouchOutside: false,
+                btnOkColor: Colors.red,
+                btnOkOnPress: () {},
+              ).show();
+            }
+          }
+        }
+      );
     } else {
       var isGrant = await Permission.camera.request();
       if (isGrant.isGranted) {

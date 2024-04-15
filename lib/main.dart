@@ -1,5 +1,4 @@
 // ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -132,12 +131,12 @@ class _MainState extends State<Main> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _loading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : _isLoggedIn
-              ? const App()
-              : const Login(),
+        ? const Center(
+            child: CircularProgressIndicator(),
+          )
+        : _isLoggedIn
+            ? const App()
+            : const Login(),
     );
   }
 }

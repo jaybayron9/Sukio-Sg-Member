@@ -94,6 +94,21 @@ class _EventsState extends State<Events> {
     return events.any((event) => isSameDay(event.date, day));
   } 
 
+  formatDate(String dateString) {
+    DateTime date = DateTime.parse(dateString);
+
+    List<String> months = [
+      "January", "February", "March", "April", "May", "June", 
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    int day = date.day;
+    int monthIndex = date.month - 1;
+    int year = date.year;
+
+    return "$day ${months[monthIndex]} $year";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,8 +169,7 @@ class _EventsState extends State<Events> {
                           },
                         ),
                         const SizedBox(width: 5),
-                        IconButton(
-                          visualDensity: VisualDensity.compact,
+                        TextButton(
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.zero,
                             shape: const CircleBorder(), 
@@ -167,7 +181,7 @@ class _EventsState extends State<Events> {
                               filteredEvents = events.where((event) => isSameDay(event.date, _selectedDay)).toList();
                             });
                           },
-                          icon: Icon(Icons.today, color: Colors.blue.shade900, size: 28)
+                          child: const Text('Today', style: TextStyle(color: Colors.lightBlueAccent))
                         ), 
                       ],
                     ),
@@ -286,7 +300,7 @@ class _EventsState extends State<Events> {
                                                         text: 'Date: ',
                                                         style: const TextStyle(color: Colors.white),
                                                         children: <TextSpan>[
-                                                          TextSpan(text: '${event.eventDate} ', style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+                                                          TextSpan(text: '${formatDate(event.eventDate)} ', style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
                                                           const TextSpan(text: 'Time: ', style: TextStyle(color: Colors.white)),
                                                           TextSpan(text: '${event.time} ', style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
                                                         ],
@@ -330,9 +344,9 @@ class _EventsState extends State<Events> {
                                           height: 30,
                                           width: 30,
                                           child: IconButton(
-                                            onPressed: () async {
+                                            onPressed: () async { 
                                               final response = await http.post(
-                                                Uri.parse('https://ww2.selfiesmile.app/member/join/event'),
+                                                Uri.parse('https://ww2.selfiesmile.app/member/check/join'),
                                                 body: { 
                                                   'member_id': user['authId'].toString(),
                                                   'event_id': event.id
@@ -340,21 +354,26 @@ class _EventsState extends State<Events> {
                                               );
                                               if (response.statusCode == 200) {
                                                 final Map<String, dynamic> res = json.decode(response.body);
-                                                if (res['status'].toString() == 'true') {
+                                                print(res);
+                                                if (res['is_join'].toString() == 'false') {
+                                                  setState(() { isJoinedEvent = false; }); 
+                                                } else {
                                                   setState(() { isJoinedEvent = true; });
-                                                  showModal(
-                                                    context, 
-                                                    event.eventTitle, 
-                                                    event.eventDate, 
-                                                    event.time, 
-                                                    1, 
-                                                    event.participantsNo, 
-                                                    '19 min', 
-                                                    user['authId'].toString(), 
-                                                    event.id
-                                                  );
                                                 }
-                                              }  
+                                                showModal(
+                                                  context,
+                                                  event.eventTitle,
+                                                  formatDate(event.eventDate),
+                                                  event.time,
+                                                  res['total_participants'].toString(),
+                                                  event.participantsNo,
+                                                  res['total_duration'].toString(), 
+                                                  user['authId'].toString(), 
+                                                  event.id
+                                                );
+                                              } else {
+                                                  throw Exception('Failed to fetch data. Status code: ${response.statusCode}');
+                                              }
                                             },
                                             style: ElevatedButton.styleFrom( 
                                               padding: EdgeInsets.zero,
@@ -433,7 +452,17 @@ class _EventsState extends State<Events> {
     );
   }
 
-  showModal(BuildContext context, eventTitle, date, time, memberJoin, participantsNo, duration, memberId, eventId) {
+  showModal(
+    BuildContext context, 
+    eventTitle, 
+    date, 
+    time, 
+    memberJoin, 
+    participantsNo, 
+    duration, 
+    memberId, 
+    eventId,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -441,7 +470,7 @@ class _EventsState extends State<Events> {
         content: StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return SizedBox(
-              height: 180,
+              height: 200,
               width: MediaQuery.of(context).size.width * 0.9,
               child: Column( 
                 children: [
@@ -449,7 +478,7 @@ class _EventsState extends State<Events> {
                   Row( 
                     children: [
                       Text(
-                        'Title: ', 
+                        'Title: ',
                         textAlign: TextAlign.start, 
                         style: TextStyle(
                           color: Colors.grey.shade600, 
@@ -457,14 +486,16 @@ class _EventsState extends State<Events> {
                           fontWeight: FontWeight.bold
                         )
                       ), 
-                      Text(
-                        eventTitle, 
-                        textAlign: TextAlign.start, 
-                        style: TextStyle(
-                          color: Colors.grey.shade800, 
-                          fontSize: 18, 
-                          fontWeight: FontWeight.bold
-                        )
+                      Expanded(
+                        child: Text(
+                          eventTitle, 
+                          textAlign: TextAlign.start, 
+                          style: TextStyle(
+                            color: Colors.grey.shade800, 
+                            fontSize: 18, 
+                            fontWeight: FontWeight.bold
+                          )
+                        ),
                       ), 
                     ],
                   ),
@@ -565,74 +596,96 @@ class _EventsState extends State<Events> {
             );
           },
         ),
-        actions: const <Widget>[
-          // Center(
-          //   child: 
-          //     isJoinedEvent 
-          //     ? ElevatedButton(
-          //         style: ButtonStyle(
-          //           backgroundColor: MaterialStateProperty.all<Color>(Colors.amber),
-          //           foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
-          //         ),
-          //         onPressed: () async {   
-          //           final response = await http.post(
-          //             Uri.parse('https://ww2.selfiesmile.app/member/join/event'),
-          //             body: { 
-          //               'member_id': memberId,
-          //               'event_id': eventId
-          //             },
-          //           );
-          //           if (response.statusCode == 200) {
-          //             final Map<String, dynamic> res = json.decode(response.body);
-          //             print(res);
-          //             if (res['status'].toString() == 'true') { 
-          //               Navigator.of(ctx).pop();
-          //             }
-          //           } 
-          //         },
-          //         child: Text(
-          //           'JOIN EVENT',
-          //           style: TextStyle(
-          //             fontFamily: 'Circular',
-          //             fontSize: 20,
-          //             fontWeight: FontWeight.w600,
-          //             color: Colors.blue.shade800,
-          //           ),
-          //         ),
-          //       )
-          //     : ElevatedButton(
-          //         style: ButtonStyle(
-          //           backgroundColor: MaterialStateProperty.all<Color>(Colors.amber),
-          //           foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
-          //         ),
-          //         onPressed: () async {
-          //           final response = await http.post(
-          //             Uri.parse('https://ww2.selfiesmile.app/member/cancel/join/event'),
-          //             body: { 
-          //               'member_id': memberId,
-          //               'event_id': eventId
-          //             },
-          //           );
-          //           if (response.statusCode == 200) {
-          //             final Map<String, dynamic> res = json.decode(response.body);
-          //             print(res);
-          //             if (res['status'].toString() == 'true') { 
-          //               setState(() { isJoinedEvent = false; });
-          //               Navigator.of(ctx).pop();
-          //             }
-          //           }
-          //         },
-          //         child: Text(
-          //           'CANCEL JOIN',
-          //           style: TextStyle(
-          //             fontFamily: 'Circular',
-          //             fontSize: 20,
-          //             fontWeight: FontWeight.w600,
-          //             color: Colors.blue.shade800,
-          //           ),
-          //         ),
-          //       )
-          // ),
+        actions: <Widget>[
+          ElevatedButton(
+            onPressed: (){
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('CLOSE'),
+          ),
+          !isJoinedEvent
+          ? ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(Colors.amber),
+              foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
+            ),
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              final response = await http.post(
+                Uri.parse('https://ww2.selfiesmile.app/member/join/event'),
+                body: {
+                  'member_id': memberId,
+                  'event_id': eventId
+                },
+              );
+              if (response.statusCode == 200) {
+                final Map<String, dynamic> res = json.decode(response.body);
+                if (res['status'].toString() == 'true') {
+                  AwesomeDialog(
+                    context: context,
+                    dialogType: DialogType.success,
+                    animType: AnimType.rightSlide,
+                    title: 'Event joined successfully.',
+                    dismissOnTouchOutside: false,
+                    btnOkOnPress: () async {},
+                  ).show();
+                } else {
+                  AwesomeDialog(
+                    context: context,
+                    dialogType: DialogType.error,
+                    animType: AnimType.rightSlide,
+                    title: res['message'].toString(),
+                    dismissOnTouchOutside: false,
+                    btnOkOnPress: () async {},
+                  ).show();
+                } 
+              }
+            },
+            child: Text(
+              'JOIN EVENT',
+              style: TextStyle(
+                fontFamily: 'Circular',
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.blue.shade800,
+              ),
+            ),
+          )
+          : ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.amber),
+                foregroundColor: MaterialStateProperty.all<Color>(const Color(0xFF222222)),
+              ),
+              onPressed: () async {
+                Navigator.of(ctx).pop();
+                final response = await http.post(
+                  Uri.parse('https://ww2.selfiesmile.app/member/cancel/join/event'),
+                  body: { 
+                    'member_id': memberId,
+                    'event_id': eventId
+                  },
+                );
+                if (response.statusCode == 200) { 
+                  AwesomeDialog(
+                    context: context,
+                    dialogType: DialogType.success,
+                    animType: AnimType.rightSlide,
+                    title: 'Cancel join event',
+                    dismissOnTouchOutside: false,
+                    btnOkOnPress: () async {},
+                  ).show(); 
+                }
+              },
+              child: Text(
+                'CANCEL JOIN',
+                style: TextStyle(
+                  fontFamily: 'Circular',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red.shade800,
+                ),
+              ),
+            ), 
         ],
       ),
     );
@@ -654,6 +707,7 @@ class GroupEvent {
   final String bookingStatus;
   final String memberId;
   final String participantsNo;
+  final String duration;
 
   GroupEvent({required this.id,
     required this.groupType,
@@ -668,7 +722,8 @@ class GroupEvent {
     required this.eventColor,
     required this.bookingStatus,
     required this.memberId,
-    required this.participantsNo
+    required this.participantsNo,
+    required this.duration
   });
 
   factory GroupEvent.fromJson(Map<String, dynamic> json) {
@@ -686,7 +741,8 @@ class GroupEvent {
       eventColor: convertHexToColor(json['event_color']),
       bookingStatus: json['booking_status'].toString(),
       memberId: json['member_id'].toString(),
-      participantsNo: json['participants_no'].toString()
+      participantsNo: json['participants_no'].toString(),
+      duration: json['duration'].toString()
     );
   }
 }

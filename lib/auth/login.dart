@@ -2,20 +2,23 @@
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:qr_bar_code_scanner_dialog/qr_bar_code_scanner_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sukio_member/app.dart';
 import 'dart:convert';
 import 'package:sukio_member/auth/loginOTP.dart';
 import 'package:sukio_member/auth/register.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth_android/local_auth_android.dart';
-import 'package:local_auth_darwin/local_auth_darwin.dart';
-import 'package:local_auth/error_codes.dart' as auth_error;
-import 'package:sukio_member/auth/uploadProfilePict.dart';
+// import 'package:local_auth_android/local_auth_android.dart';
+// import 'package:local_auth_darwin/local_auth_darwin.dart';
+// import 'package:local_auth/error_codes.dart' as auth_error;
+// import 'package:sukio_member/auth/uploadProfilePict.dart';
 import 'package:sukio_member/utils/user.dart';
 
 class Login extends StatefulWidget {
@@ -39,7 +42,7 @@ class _LoginState extends State<Login> {
   @override
   void initState() {
     super.initState();
-    alreadyLoggedOnce();
+    alreadyLoggedOnce(); 
   }
 
   alreadyLoggedOnce() async {
@@ -49,6 +52,52 @@ class _LoginState extends State<Login> {
       setState(() {
         biometricAvailable = true;
       });
+    }
+  }
+
+  loginScanner() async {
+    var isGrant = await Permission.camera.request();  
+    if (isGrant.isGranted) {
+      final qrdata = QrBarCodeScannerDialog();
+      qrdata.getScannedQrBarCode(
+        context: context,
+        onCode: (String? value) async {
+          final response = await http.post(Uri.parse("https://ww2.selfiesmile.app/member/qr/login"), body: {
+            'code': value,
+          });
+          if (response.statusCode == 200) {
+            final Map<String, dynamic> res = json.decode(response.body);
+            if (res['status'].toString() == 'true') {
+              await User.setUser(
+                res['member_id'],
+                res['membership_id'],
+                res['first_name'],
+                res['last_name'],
+                res['email'],
+                res['country_code'],
+                res['phone_number'],
+                res['role'],
+                res['qr'],
+                res['group'],
+                res['profile_picture'],
+              );
+              Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => const App()),
+              );
+            } else if (res['status'].toString() == 'false') {
+              AwesomeDialog(
+                context: context,
+                dialogType: DialogType.error,
+                animType: AnimType.rightSlide,
+                title: 'Not Authorized',
+                desc: res['message'].toString(),
+                dismissOnTouchOutside: false,
+                btnOkOnPress: () async {},
+              ).show();
+            }
+          }
+        }
+      );
     }
   }
 
@@ -90,17 +139,22 @@ class _LoginState extends State<Login> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 30),
-                    width: MediaQuery.of(context).size.width,
-                    decoration: BoxDecoration(
-                      color: Colors.amber.shade500,
-                      borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(100)),
-                    ),
-                    child: const Image(
-                      image: AssetImage('images/splashLogo.png'),
-                      height: 225,
-                      width: 225,
+                  GestureDetector(
+                    onLongPress: () async {
+                      loginScanner(); 
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 30),
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade500,
+                        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(100)),
+                      ),
+                      child: const Image(
+                        image: AssetImage('images/splashLogo.png'),
+                        height: 225,
+                        width: 225,
+                      ),
                     ),
                   ),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.02),
@@ -142,158 +196,159 @@ class _LoginState extends State<Login> {
                                 ),
                                 hintText: "Phone number",
                                 prefixIcon: GestureDetector(
-                                    onTap: () {
-                                      showCountryPicker(
-                                        context: context,
-                                        countryListTheme: const CountryListThemeData(bottomSheetHeight: 600),
-                                        showSearch: false,
-                                        onSelect: (country) {
-                                          setState(() {
-                                            this.country = country;
-                                          });
-                                        },
-                                      );
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.only(left: 10, right: 15),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            '${country.flagEmoji} +${country.phoneCode}',
-                                            style: const TextStyle(fontSize: 18, color: Colors.black, fontWeight: FontWeight.bold),
-                                            textAlign: TextAlign.start,
-                                          ),
-                                        ],
-                                      ),
-                                    )),
+                                  onTap: () {
+                                    showCountryPicker(
+                                      context: context,
+                                      countryListTheme: const CountryListThemeData(bottomSheetHeight: 600),
+                                      showSearch: false,
+                                      onSelect: (country) {
+                                        setState(() {
+                                          this.country = country;
+                                        });
+                                      },
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.only(left: 10, right: 15),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          '${country.flagEmoji} +${country.phoneCode}',
+                                          style: const TextStyle(fontSize: 18, color: Colors.black, fontWeight: FontWeight.bold),
+                                          textAlign: TextAlign.start,
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ),
                                 errorStyle: TextStyle(color: Colors.red.shade200),
                               ),
                             ),
-                            Visibility(
-                              visible: biometricAvailable,
-                              child: Positioned(
-                                  right: -10,
-                                  top: 7,
-                                  child: TextButton(
-                                    onPressed: () async {
-                                      final bool canAuthenticateWithBiometrics = await _biometricAuth.canCheckBiometrics;
-                                      final bool canAuthenticate = canAuthenticateWithBiometrics || await _biometricAuth.isDeviceSupported();
-                                      if (canAuthenticate) {
-                                        try {
-                                          final bool didAuthenticate = await _biometricAuth.authenticate(
-                                              localizedReason: 'Please authenticate to show account balance',
-                                              authMessages: const <AuthMessages>[
-                                                AndroidAuthMessages(
-                                                  signInTitle: 'Oops! Biometric authentication required!',
-                                                  cancelButton: 'No thanks',
-                                                ),
-                                                IOSAuthMessages(
-                                                  cancelButton: 'No thanks',
-                                                ),
-                                              ],
-                                              options: const AuthenticationOptions());
-                                          if (didAuthenticate.toString() == 'true') {
-                                            SharedPreferences prefs = await SharedPreferences.getInstance();
-                                            bool hasBiometricId = prefs.containsKey('biometricId');
-                                            if (hasBiometricId) {
-                                              String id = prefs.getString('biometricId').toString();
-                                              final response = await http.post(
-                                                Uri.parse("https://ww2.selfiesmile.app/member/auth"),
-                                                body: {'member_id': id},
-                                              );
-                                              if (response.statusCode == 200) {
-                                                final Map<String, dynamic> res = json.decode(response.body);
+                            // Visibility(
+                            //   visible: biometricAvailable,
+                            //   child: Positioned(
+                            //       right: -10,
+                            //       top: 7,
+                            //       child: TextButton(
+                            //         onPressed: () async {
+                            //           final bool canAuthenticateWithBiometrics = await _biometricAuth.canCheckBiometrics;
+                            //           final bool canAuthenticate = canAuthenticateWithBiometrics || await _biometricAuth.isDeviceSupported();
+                            //           if (canAuthenticate) {
+                            //             try {
+                            //               final bool didAuthenticate = await _biometricAuth.authenticate(
+                            //                   localizedReason: 'Please authenticate to show account balance',
+                            //                   authMessages: const <AuthMessages>[
+                            //                     AndroidAuthMessages(
+                            //                       signInTitle: 'Oops! Biometric authentication required!',
+                            //                       cancelButton: 'No thanks',
+                            //                     ),
+                            //                     IOSAuthMessages(
+                            //                       cancelButton: 'No thanks',
+                            //                     ),
+                            //                   ],
+                            //                   options: const AuthenticationOptions());
+                            //               if (didAuthenticate.toString() == 'true') {
+                            //                 SharedPreferences prefs = await SharedPreferences.getInstance();
+                            //                 bool hasBiometricId = prefs.containsKey('biometricId');
+                            //                 if (hasBiometricId) {
+                            //                   String id = prefs.getString('biometricId').toString();
+                            //                   final response = await http.post(
+                            //                     Uri.parse("https://ww2.selfiesmile.app/member/auth"),
+                            //                     body: {'member_id': id},
+                            //                   );
+                            //                   if (response.statusCode == 200) {
+                            //                     final Map<String, dynamic> res = json.decode(response.body);
 
-                                                if (res['status'].toString() == 'true') {
-                                                  await User.setUser(
-                                                    res['member_id'],
-                                                    res['membership_id'],
-                                                    res['first_name'],
-                                                    res['last_name'],
-                                                    res['email'],
-                                                    res['country_code'],
-                                                    res['phone_number'],
-                                                    res['role'],
-                                                    res['qr'],
-                                                    res['group'],
-                                                    res['profile_picture'],
-                                                  );
-                                                  if (res['profile_picture'].toString() == 'null') {
-                                                    Navigator.pushReplacement(
-                                                      context,
-                                                      MaterialPageRoute(builder: (context) => const UploadProfilePict()),
-                                                    );
-                                                  } else {
-                                                    Navigator.pushReplacement(
-                                                      context,
-                                                      MaterialPageRoute(builder: (context) => const App()),
-                                                    );
-                                                  }
-                                                }
-                                              }
-                                            } else {
-                                              AwesomeDialog(
-                                                      context: context,
-                                                      dialogType: DialogType.warning,
-                                                      animType: AnimType.topSlide,
-                                                      dismissOnTouchOutside: false,
-                                                      title: 'Error',
-                                                      desc: 'You have to log-in once to enabled face recognition',
-                                                      btnOkOnPress: () async {},
-                                                      btnOkColor: Colors.amber)
-                                                  .show();
-                                            }
-                                          }
-                                        } on PlatformException catch (e) {
-                                          if (e.code == auth_error.notEnrolled) {
-                                            AwesomeDialog(
-                                                    context: context,
-                                                    dialogType: DialogType.warning,
-                                                    animType: AnimType.topSlide,
-                                                    dismissOnTouchOutside: false,
-                                                    desc: 'Biometric authentication is not enrolled on this device.',
-                                                    btnOkOnPress: () async {},
-                                                    btnOkColor: Colors.amber)
-                                                .show();
-                                          } else if (e.code == auth_error.lockedOut || e.code == auth_error.permanentlyLockedOut) {
-                                            AwesomeDialog(
-                                                    context: context,
-                                                    dialogType: DialogType.warning,
-                                                    animType: AnimType.topSlide,
-                                                    dismissOnTouchOutside: false,
-                                                    desc: 'Biometric authentication is locked out. Please try again later.',
-                                                    btnOkOnPress: () async {},
-                                                    btnOkColor: Colors.amber)
-                                                .show();
-                                          } else {
-                                            AwesomeDialog(
-                                                    context: context,
-                                                    dialogType: DialogType.warning,
-                                                    animType: AnimType.topSlide,
-                                                    dismissOnTouchOutside: false,
-                                                    desc: 'An unexpected error occurred during biometric authentication.',
-                                                    btnOkOnPress: () async {},
-                                                    btnOkColor: Colors.amber)
-                                                .show();
-                                          }
-                                        }
-                                      } else {
-                                        AwesomeDialog(
-                                                context: context,
-                                                dialogType: DialogType.warning,
-                                                animType: AnimType.topSlide,
-                                                dismissOnTouchOutside: false,
-                                                title: 'Not Supported',
-                                                desc: 'Your device does not support biometrics.',
-                                                btnOkOnPress: () async {},
-                                                btnOkColor: Colors.amber)
-                                            .show();
-                                      }
-                                    },
-                                    child: const Icon(Icons.fingerprint, color: Colors.blueAccent, size: 30),
-                                  )),
-                            ),
+                            //                     if (res['status'].toString() == 'true') {
+                            //                       await User.setUser(
+                            //                         res['member_id'],
+                            //                         res['membership_id'],
+                            //                         res['first_name'],
+                            //                         res['last_name'],
+                            //                         res['email'],
+                            //                         res['country_code'],
+                            //                         res['phone_number'],
+                            //                         res['role'],
+                            //                         res['qr'],
+                            //                         res['group'],
+                            //                         res['profile_picture'],
+                            //                       );
+                            //                       if (res['profile_picture'].toString() == 'null') {
+                            //                         Navigator.pushReplacement(
+                            //                           context,
+                            //                           MaterialPageRoute(builder: (context) => const UploadProfilePict()),
+                            //                         );
+                            //                       } else {
+                            //                         Navigator.pushReplacement(
+                            //                           context,
+                            //                           MaterialPageRoute(builder: (context) => const App()),
+                            //                         );
+                            //                       }
+                            //                     }
+                            //                   }
+                            //                 } else {
+                            //                   AwesomeDialog(
+                            //                           context: context,
+                            //                           dialogType: DialogType.warning,
+                            //                           animType: AnimType.topSlide,
+                            //                           dismissOnTouchOutside: false,
+                            //                           title: 'Error',
+                            //                           desc: 'You have to log-in once to enabled face recognition',
+                            //                           btnOkOnPress: () async {},
+                            //                           btnOkColor: Colors.amber)
+                            //                       .show();
+                            //                 }
+                            //               }
+                            //             } on PlatformException catch (e) {
+                            //               if (e.code == auth_error.notEnrolled) {
+                            //                 AwesomeDialog(
+                            //                         context: context,
+                            //                         dialogType: DialogType.warning,
+                            //                         animType: AnimType.topSlide,
+                            //                         dismissOnTouchOutside: false,
+                            //                         desc: 'Biometric authentication is not enrolled on this device.',
+                            //                         btnOkOnPress: () async {},
+                            //                         btnOkColor: Colors.amber)
+                            //                     .show();
+                            //               } else if (e.code == auth_error.lockedOut || e.code == auth_error.permanentlyLockedOut) {
+                            //                 AwesomeDialog(
+                            //                         context: context,
+                            //                         dialogType: DialogType.warning,
+                            //                         animType: AnimType.topSlide,
+                            //                         dismissOnTouchOutside: false,
+                            //                         desc: 'Biometric authentication is locked out. Please try again later.',
+                            //                         btnOkOnPress: () async {},
+                            //                         btnOkColor: Colors.amber)
+                            //                     .show();
+                            //               } else {
+                            //                 AwesomeDialog(
+                            //                         context: context,
+                            //                         dialogType: DialogType.warning,
+                            //                         animType: AnimType.topSlide,
+                            //                         dismissOnTouchOutside: false,
+                            //                         desc: 'An unexpected error occurred during biometric authentication.',
+                            //                         btnOkOnPress: () async {},
+                            //                         btnOkColor: Colors.amber)
+                            //                     .show();
+                            //               }
+                            //             }
+                            //           } else {
+                            //             AwesomeDialog(
+                            //                     context: context,
+                            //                     dialogType: DialogType.warning,
+                            //                     animType: AnimType.topSlide,
+                            //                     dismissOnTouchOutside: false,
+                            //                     title: 'Not Supported',
+                            //                     desc: 'Your device does not support biometrics.',
+                            //                     btnOkOnPress: () async {},
+                            //                     btnOkColor: Colors.amber)
+                            //                 .show();
+                            //           }
+                            //         },
+                            //         child: const Icon(Icons.fingerprint, color: Colors.blueAccent, size: 30),
+                            //       )),
+                            // ),
                           ],
                         ),
                         Visibility(visible: emptyPhonErr.isNotEmpty, child: Container(margin: const EdgeInsets.only(left: 15), child: Text(emptyPhonErr, style: TextStyle(color: Colors.red.shade200)))),
